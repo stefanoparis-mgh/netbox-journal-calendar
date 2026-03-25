@@ -92,28 +92,42 @@
 {% block javascript %}
 <script>
     (function() {
-        // NON usiamo script type="module" e NON usiamo import.
-        // Aspettiamo che NetBox carichi l'oggetto bootstrap globale.
-        function initPopovers() {
-            var bs = window.bootstrap;
+        function setupPopovers() {
+            // Cerchiamo l'oggetto bootstrap in vari punti comuni di NetBox 4
+            var bs = window.bootstrap || (window.netbox ? window.netbox.bootstrap : null);
+            
             if (bs && bs.Popover) {
-                var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-                popoverTriggerList.map(function (el) {
-                    return new bs.Popover(el, {
+                var elements = document.querySelectorAll('[data-bs-toggle="popover"]');
+                elements.forEach(function(el) {
+                    // Rimuoviamo il title nativo per evitare il tooltip grigio del browser
+                    if (el.hasAttribute('title')) {
+                        el.setAttribute('data-bs-original-title', el.getAttribute('title'));
+                        el.removeAttribute('title');
+                    }
+                    
+                    // Inizializzazione forzata
+                    new bs.Popover(el, {
                         html: true,
                         sanitize: false,
                         container: 'body',
                         trigger: 'hover',
-                        placement: 'top'
+                        placement: 'auto'
                     });
                 });
-                console.log("Popovers initialized successfully.");
+                console.log("Journal Calendar: Popovers activated successfully.");
             } else {
-                // Riprova ogni 100ms finché bootstrap non è pronto
-                setTimeout(initPopovers, 100);
+                // Riprova finché il bundle di NetBox non è pronto
+                setTimeout(setupPopovers, 200);
             }
         }
-        initPopovers();
+
+        // Avvio immediato o al caricamento
+        if (document.readyState === 'complete') {
+            setupPopovers();
+        } else {
+            window.addEventListener('load', setupPopovers);
+        }
     })();
 </script>
 {% endblock %}
+
