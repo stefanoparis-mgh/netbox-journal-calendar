@@ -1,14 +1,20 @@
 {% extends 'base/layout.html' %}
 {% load calendar_extras %}
 
+{% block extra_styles %}
+<style>
+    .popover { max-width: 350px; z-index: 1060; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .popover-header { font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #eee; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-md-3">
         <div class="card shadow-sm">
             <div class="card-header bg-light"><h5>Filtri</h5></div>
             <div class="card-body">
-                <form method="get">
-                    {{ filter_form.as_p }}
+                <form method="get">{{ filter_form.as_p }}
                     <button type="submit" class="btn btn-primary w-100 mt-2">Applica</button>
                     <a href="." class="btn btn-outline-secondary w-100 mt-2">Reset</a>
                 </form>
@@ -21,56 +27,39 @@
             <h2 class="mb-0">{{ month_name }} {{ year }}</h2>
             <a href="?month={{ next_month }}&year={{ next_year }}{% for k,v in request.GET.items %}{% if k != 'month' and k != 'year' %}&{{k}}={{v}}{% endif %}{% endfor %}" class="btn btn-outline-primary btn-sm">Successivo &gt;</a>
         </div>
-        <div class="card shadow-sm">
+        <div class="card shadow-sm overflow-hidden">
             <table class="table table-bordered mb-0" style="table-layout: fixed;">
-                <thead>
-                    <tr class="text-center bg-light">
-                        <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
-                    </tr>
-                </thead>
+                <thead><tr class="text-center bg-light"><th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th></tr></thead>
                 <tbody>
                     {% for week in month_days %}
                     <tr>
                         {% for day in week %}
                         <td style="height: 160px; vertical-align: top; background-color: {% if day == 0 %}#f8f9fa{% else %}white{% endif %}; border: 1px solid #dee2e6;">
                             {% if day != 0 %}
-                                <div class="mb-1"><span class="fw-bold text-secondary">{{ day }}</span></div>
+                                <div class="mb-1 px-1"><span class="fw-bold text-secondary">{{ day }}</span></div>
                                 {% with entries=calendar_data|get_item:day %}
                                     {% for entry in entries %}
-<div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
-    {% if entry.kind == 'info' %}border-info bg-info-subtle
-    {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
-    {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
-    {% elif entry.kind == 'success' %}border-success bg-success-subtle
-    {% else %}border-secondary bg-light{% endif %}"
-    
-    data-bs-toggle="popover"
-    data-bs-trigger="hover"
-    data-bs-html="true"
-    data-bs-placement="top"
-    title="{{ entry.assigned_object }}"
-    data-bs-content="<div class='mb-1 small text-muted'><strong>Utente:</strong> {{ entry.created_by.username }}</div>
-                     <div class='mb-2'>
-                        {% for tag in entry.tags.all %}
-                            <span class='badge' style='background-color: #{{ tag.color }}; font-size: 0.6rem;'>{{ tag.name }}</span>
-                        {% endfor %}
-                     </div>
-                     <hr class='my-1'>
-                     <div class='mt-1 small'>{{ entry.comments|linebreaksbr }}</div>"
->
-    <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
-        <strong>
-            {% with ct=entry.assigned_object_type.model %}
-                {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
-                {% elif ct == 'virtualmachine' %}<i class="mdi mdi-cube-outline text-info"></i>
-                {% elif ct == 'service' %}<i class="mdi mdi-cloud-outline text-warning"></i>
-                {% else %}<i class="mdi mdi-note-text-outline text-muted"></i>{% endif %}
-            {% endwith %}
-            {{ entry.created|date:"H:i" }}
-        </strong>
-        : {{ entry.comments|truncatechars:12 }}
-    </a>
-</div>
+                                        <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
+                                            {% if entry.kind == 'info' %}border-info bg-info-subtle
+                                            {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
+                                            {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
+                                            {% elif entry.kind == 'success' %}border-success bg-success-subtle
+                                            {% else %}border-secondary bg-light{% endif %}"
+                                            data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true" data-bs-placement="top"
+                                            title="{{ entry.assigned_object }}"
+                                            data-bs-content="<div class='mb-1 small text-muted'><strong>Utente:</strong> {{ entry.created_by.username }}</div><div class='mb-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; font-size: 0.6rem; margin-right: 2px;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='mt-1 small'>{{ entry.comments|linebreaksbr }}</div>">
+                                            <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
+                                                <strong>
+                                                    {% with ct=entry.assigned_object_type.model %}
+                                                        {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
+                                                        {% elif ct == 'virtualmachine' %}<i class="mdi mdi-cube-outline text-info"></i>
+                                                        {% elif ct == 'service' %}<i class="mdi mdi-cloud-outline text-warning"></i>
+                                                        {% else %}<i class="mdi mdi-note-text-outline text-muted"></i>{% endif %}
+                                                    {% endwith %}
+                                                    {{ entry.created|date:"H:i" }}
+                                                </strong>: {{ entry.comments|truncatechars:12 }}
+                                            </a>
+                                        </div>
                                     {% endfor %}
                                 {% endwith %}
                             {% endif %}
@@ -84,17 +73,13 @@
     </div>
 </div>
 {% endblock %}
+
 {% block javascript %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Seleziona tutti gli elementi con il toggle popover
         var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-            return new bootstrap.Popover(popoverTriggerEl, {
-                // Forza il rendering dell'HTML anche se Bootstrap è restrittivo
-                html: true,
-                sanitize: false 
-            })
+        popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl, { html: true, sanitize: false })
         })
     });
 </script>
