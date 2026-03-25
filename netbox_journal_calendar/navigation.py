@@ -1,10 +1,14 @@
-from netbox.plugins import PluginMenuItem
+from netbox.plugins import PluginMenu, PluginMenuItem
 
-menu_items = (
-    PluginMenuItem(
-        link='plugins:netbox_journal_calendar:journal_calendar',
-        link_text='Calendario Journal',
-        # Rimosso icon_class e icon per compatibilità NetBox 4.x
-        permissions=['extras.view_journalentry'],
+item1 = PluginMenuItem(
+    link='plugins:netbox_journal_calendar:journal_calendar',
+    link_text='Calendario Journal'
+)
+
+menu = PluginMenu(
+    label='Journal Calendar',
+    groups=(
+        ('Visualizzazione', (item1,)),
     ),
+    icon_class='mdi mdi-calendar-month'
 )
