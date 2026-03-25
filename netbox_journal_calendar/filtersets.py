@@ -5,12 +5,12 @@ from dcim.models import Device, Site
 from extras.choices import JournalEntryKindChoices
 
 class JournalCalendarFilterSet(NetBoxModelFilterSet):
-    device = django_filters.ModelMultipleChoiceField(
+    device = django_filters.ModelMultipleChoiceFilter(
         queryset=Device.objects.all(),
         field_name='assigned_object_id',
         label='Device',
     )
-    site = django_filters.ModelChoiceField(
+    site = django_filters.ModelChoiceFilter(
         queryset=Site.objects.all(),
         method='filter_by_site',
         label='Sito'
@@ -20,7 +20,7 @@ class JournalCalendarFilterSet(NetBoxModelFilterSet):
         label='Tipo',
         widget=django_filters.widgets.CSVWidget
     )
-    tag = django_filters.ModelMultipleChoiceField(
+    tag = django_filters.ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
         field_name='tags__slug',
         to_field_name='slug',
