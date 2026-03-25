@@ -1,0 +1,1 @@
+recursive-include netbox_journal_calendar/templates *

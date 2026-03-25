@@ -1,0 +1,30 @@
+import django_filters
+from netbox.filtersets import NetBoxModelFilterSet
+from extras.models import JournalEntry
+from dcim.models import Device, Site
+from extras.choices import JournalEntryKindChoices
+
+class JournalCalendarFilterSet(NetBoxModelFilterSet):
+    device = django_filters.ModelMultipleChoiceField(
+        queryset=Device.objects.all(),
+        field_name='assigned_object_id',
+        label='Device',
+    )
+    site = django_filters.ModelChoiceField(
+        queryset=Site.objects.all(),
+        method='filter_by_site',
+        label='Sito'
+    )
+    kind = django_filters.MultipleChoiceFilter(
+        choices=JournalEntryKindChoices,
+        label='Tipo',
+        widget=django_filters.widgets.CSVWidget
+    )
+
+    def filter_by_site(self, queryset, name, value):
+        if not value: return queryset
+        return queryset.filter(device__site=value)
+
+    class Meta:
+        model = JournalEntry
+        fields = ['id', 'created', 'created_by', 'kind', 'cf']

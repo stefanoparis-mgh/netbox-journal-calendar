@@ -1,0 +1,64 @@
+{% extends 'base/layout.html' %}
+{% load calendar_extras %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header"><h5>Filtri</h5></div>
+            <div class="card-body">
+                <form method="get">
+                    {{ filter_form.as_p }}
+                    <button type="submit" class="btn btn-primary w-100">Applica</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <h2 class="text-center">{{ month_name }} {{ year }}</h2>
+        <div class="card mt-3">
+            <table class="table table-bordered" style="table-layout: fixed;">
+                <thead>
+                    <tr class="text-center">
+                        <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in month_days %}
+                    <tr>
+                        {% for day in week %}
+                        <td style="height: 120px; vertical-align: top;">
+                            {% if day != 0 %}
+    <span class="badge bg-secondary mb-1">{{ day }}</span>
+    
+    {# Usa il filtro get_item per recuperare la lista delle entries per il giorno corrente #}
+    {% with entries=calendar_data|get_item:day %}
+        {% if entries %}
+            {% for entry in entries %}
+                <div class="small p-1 mb-1 border-start border-4 rounded 
+                    {% if entry.kind == 'info' %}border-info bg-info-subtle
+                    {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
+                    {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
+                    {% elif entry.kind == 'success' %}border-success bg-success-subtle
+                    {% else %}border-secondary bg-light{% endif %}"
+                    style="font-size: 0.75rem;"
+                    title="{{ entry.comments }}">
+                    
+                    <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
+                        <strong>{{ entry.created|date:"H:i" }}</strong> - {{ entry.comments|truncatechars:15 }}
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
