@@ -1,25 +1,18 @@
 {% extends 'base/layout.html' %}
 {% load calendar_extras %}
 
+
 {% block extra_styles %}
 <style>
-    /* Forza lo stile del popover per sovrastare i default di NetBox */
-    .popover {
-        border: 1px solid #dee2e6 !important;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-        background-color: #fff !important;
-        max-width: 320px !important;
-    }
-    .popover-header {
-        background-color: #f8f9fa !important;
-        border-bottom: 1px solid #dee2e6 !important;
-        font-weight: bold !important;
-        padding: 8px 12px !important;
-    }
-    .popover-body {
-        padding: 12px !important;
-        color: #333 !important;
-    }
+    /* Ripristiniamo i colori se spariti */
+    .bg-info-subtle { background-color: #cff4fc !important; border-color: #0dcaf0 !important; }
+    .bg-danger-subtle { background-color: #f8d7da !important; border-color: #dc3545 !important; }
+    .bg-warning-subtle { background-color: #fff3cd !important; border-color: #ffc107 !important; }
+    .bg-success-subtle { background-color: #d1e7dd !important; border-color: #198754 !important; }
+    
+    /* Stile Popover */
+    .popover { max-width: 320px !important; border-radius: 8px; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); }
+    .popover-header { font-weight: bold; background-color: #f8f9fa; }
 </style>
 {% endblock %}
 
@@ -54,27 +47,37 @@
                                 <div class="mb-1 px-1"><span class="fw-bold text-secondary">{{ day }}</span></div>
                                 {% with entries=calendar_data|get_item:day %}
                                     {% for entry in entries %}
-                                        <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
-    {% if entry.kind == 'info' %}border-info bg-info-subtle
-    {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
-    ... (resto dei colori) ... {% endif %}"
+                                        <div class="journal-entry small p-1 mb-1 border-start border-4 rounded shadow-sm
+    {% if entry.kind == 'info' %}bg-info-subtle
+    {% elif entry.kind == 'danger' %}bg-danger-subtle
+    {% elif entry.kind == 'warning' %}bg-warning-subtle
+    {% elif entry.kind == 'success' %}bg-success-subtle
+    {% else %}bg-light border-secondary{% endif %}"
     
+    {# USIAMO DATA ATTRIBUTES PULITI PER EVITARE CONFLITTI DI VIRGOLETTE #}
     data-bs-toggle="popover"
-    title="<i class='mdi mdi-clock-outline'></i> {{ entry.created|date:'H:i' }} - {{ entry.assigned_object }}"
-    data-bs-content="<div class='mb-1'><strong>Utente:</strong> {{ entry.created_by.username }}</div><div class='mb-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; font-size: 0.6rem; color: #fff;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='small text-muted'>{{ entry.comments|linebreaksbr }}</div>"
+    data-bs-title="{{ entry.assigned_object }}"
+    data-bs-content="<strong>Utente:</strong> {{ entry.created_by.username }}<br>
+                     <div class='my-2'>
+                        {% for tag in entry.tags.all %}
+                            <span class='badge' style='background-color: #{{ tag.color }}; color: white; font-size: 10px;'>{{ tag.name }}</span>
+                        {% endfor %}
+                     </div>
+                     <hr class='my-1'>
+                     <div class='small text-muted'>{{ entry.comments|linebreaksbr }}</div>"
 >
-                                            <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
-                                                <strong>
-                                                    {% with ct=entry.assigned_object_type.model %}
-                                                        {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
-                                                        {% elif ct == 'virtualmachine' %}<i class="mdi mdi-cube-outline text-info"></i>
-                                                        {% elif ct == 'service' %}<i class="mdi mdi-cloud-outline text-warning"></i>
-                                                        {% else %}<i class="mdi mdi-note-text-outline text-muted"></i>{% endif %}
-                                                    {% endwith %}
-                                                    {{ entry.created|date:"H:i" }}
-                                                </strong>: {{ entry.comments|truncatechars:12 }}
-                                            </a>
-                                        </div>
+    <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
+        <strong>
+            {% with ct=entry.assigned_object_type.model %}
+                {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
+                {% elif ct == 'virtualmachine' %}<i class="mdi mdi-cube-outline text-info"></i>
+                {% elif ct == 'service' %}<i class="mdi mdi-cloud-outline text-warning"></i>
+                {% else %}<i class="mdi mdi-note-text-outline text-muted"></i>{% endif %}
+            {% endwith %}
+            {{ entry.created|date:"H:i" }}
+        </strong>: {{ entry.comments|truncatechars:12 }}
+    </a>
+</div>
                                     {% endfor %}
                                 {% endwith %}
                             {% endif %}
