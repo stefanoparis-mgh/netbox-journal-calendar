@@ -1,10 +1,10 @@
 import django_filters
-from netbox.filtersets import NetBoxModelFilterSet
 from extras.models import JournalEntry, Tag
 from dcim.models import Device, Site
 from extras.choices import JournalEntryKindChoices
 
-class JournalCalendarFilterSet(NetBoxModelFilterSet):
+# Usiamo django_filters.FilterSet per avere il controllo totale sui campi
+class JournalCalendarFilterSet(django_filters.FilterSet):
     device = django_filters.ModelMultipleChoiceFilter(
         queryset=Device.objects.all(),
         field_name='assigned_object_id',
