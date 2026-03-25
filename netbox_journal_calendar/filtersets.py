@@ -46,4 +46,4 @@ class JournalCalendarFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = JournalEntry
-        fields = ['id', 'created', 'created_by', 'kind', 'tag']
+        fields = ['created', 'created_by', 'tag']

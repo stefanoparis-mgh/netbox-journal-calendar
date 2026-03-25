@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="row">
-    <!-- Colonna laterale per i Filtri -->
+    <!-- Barra laterale Filtri -->
     <div class="col-md-3">
         <div class="card shadow-sm">
             <div class="card-header bg-light">
@@ -21,10 +21,10 @@
         </div>
     </div>
 
-    <!-- Colonna principale per il Calendario -->
+    <!-- Area Calendario -->
     <div class="col-md-9">
         <!-- Navigazione Mese -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <a href="?month={{ prev_month }}&year={{ prev_year }}{% for key, value in request.GET.items %}{% if key != 'month' and key != 'year' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
                class="btn btn-outline-primary btn-sm">
                 <i class="mdi mdi-chevron-left"></i> Precedente
@@ -38,9 +38,9 @@
             </a>
         </div>
 
-        <!-- Griglia Calendario -->
+        <!-- Griglia -->
         <div class="card shadow-sm">
-            <table class="table table-bordered mb-0" style="table-layout: fixed;">
+            <table class="table table-bordered mb-0" style="table-layout: fixed; border-collapse: collapse;">
                 <thead>
                     <tr class="text-center bg-light">
                         <th style="width: 14.2%">Lun</th>
@@ -56,30 +56,44 @@
                     {% for week in month_days %}
                     <tr>
                         {% for day in week %}
-                        <td style="height: 150px; vertical-align: top; overflow-y: auto; background-color: {% if day == 0 %}#f8f9fa{% else %}white{% endif %};">
-    {% if day != 0 %}
-        {# Il numero del giorno deve essere SEMPRE fuori da ogni altro tag di controllo #}
-        <span class="badge bg-secondary mb-2">{{ day }}</span>
-        
-        {# Ora carichiamo le entries #}
-        {% with entries=calendar_data|get_item:day %}
-            {% for entry in entries %}
-                <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
-                    {% if entry.kind == 'info' %}border-info bg-info-subtle
-                    {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
-                    {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
-                    {% elif entry.kind == 'success' %}border-success bg-success-subtle
-                    {% else %}border-secondary bg-light{% endif %}"
-                    title="{{ entry.comments }}">
-                    
-                    <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
-                        <strong>{{ entry.created|date:"H:i" }}</strong>: {{ entry.comments|truncatechars:15 }}
-                    </a>
-                </div>
-            {% endfor %}
-        {% endwith %}
-    {% endif %}
-</td>
+                        <td style="height: 160px; vertical-align: top; padding: 8px; {% if day == 0 %}background-color: #f8f9fa;{% else %}background-color: white;{% endif %}">
+                            {% if day != 0 %}
+                                {# IL NUMERO DEL GIORNO: deve essere fuori da ogni tag 'with' o 'for' #}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge rounded-pill bg-secondary" style="font-size: 0.85rem;">{{ day }}</span>
+                                </div>
+                                
+                                {# LISTA INTERVENTI #}
+                                <div style="overflow-y: auto; max-height: 110px;">
+                                    {% with entries=calendar_data|get_item:day %}
+                                        {% for entry in entries %}
+                                            <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
+                                                {% if entry.kind == 'info' %}border-info bg-info-subtle
+                                                {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
+                                                {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
+                                                {% elif entry.kind == 'success' %}border-success bg-success-subtle
+                                                {% else %}border-secondary bg-light{% endif %}"
+                                                style="line-height: 1.2;">
+                                                
+                                                <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
+                                                    <strong style="font-size: 0.7rem;">{{ entry.created|date:"H:i" }}</strong>
+                                                    <span style="font-size: 0.75rem;">{{ entry.comments|truncatechars:18 }}</span>
+                                                </a>
+                                                
+                                                {# Badge Tags (Opzionali) #}
+                                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                                    {% for tag in entry.tags.all %}
+                                                        <span class="badge" style="background-color: #{{ tag.color }}; font-size: 0.5rem; color: #fff;">
+                                                            {{ tag.name }}
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            {% endif %}
+                        </td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
