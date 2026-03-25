@@ -9,6 +9,7 @@ class JournalCalendarFilterSet(django_filters.FilterSet):
     device = django_filters.ModelMultipleChoiceFilter(
         queryset=Device.objects.all(),
         field_name='assigned_object_id',
+        to_field_name='id',
         label='Device',
     )
     site = django_filters.ModelChoiceFilter(
@@ -32,17 +33,15 @@ class JournalCalendarFilterSet(django_filters.FilterSet):
         if not value:
             return queryset
 
-        # 1. Otteniamo il ContentType per il modello Device
         device_type = ContentType.objects.get_for_model(Device)
 
-        # 2. Filtriamo le JournalEntry che:
-        #    - Sono collegate a un Device (assigned_object_type)
-        #    - Il cui ID (assigned_object_id) appartiene a un Device di quel Sito
+        # Otteniamo gli ID dei device come stringhe
         device_ids = Device.objects.filter(site=value).values_list('id', flat=True)
+        device_ids_str = [str(id) for id in device_ids]  # Conversione in stringa
 
         return queryset.filter(
             assigned_object_type=device_type,
-            assigned_object_id__in=device_ids
+            assigned_object_id__in=device_ids_str
         )
 
     class Meta:
