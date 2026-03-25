@@ -1,16 +1,30 @@
 import django_filters
+from django.db.models import Q
+from django.contrib.contenttypes.models import ContentType
 from extras.models import JournalEntry, Tag
 from dcim.models import Device, Site
-from extras.choices import JournalEntryKindChoices
-from django.contrib.contenttypes.models import ContentType
+from virtualization.models import VirtualMachine
+from ipam.models import Service
 
-# Usiamo django_filters.FilterSet per avere il controllo totale sui campi
+
 class JournalCalendarFilterSet(django_filters.FilterSet):
     device = django_filters.ModelMultipleChoiceFilter(
         queryset=Device.objects.all(),
         field_name='assigned_object_id',
         to_field_name='id',
         label='Device',
+    )
+    virtual_machine = django_filters.ModelMultipleChoiceFilter(
+        queryset=VirtualMachine.objects.all(),
+        field_name='assigned_object_id',
+        to_field_name='id',
+        label='Virtual Machine',
+    )
+    service = django_filters.ModelMultipleChoiceFilter(
+        queryset=Service.objects.all(),
+        field_name='assigned_object_id',
+        to_field_name='id',
+        label='Service',
     )
     site = django_filters.ModelChoiceFilter(
         queryset=Site.objects.all(),
@@ -28,17 +42,32 @@ class JournalCalendarFilterSet(django_filters.FilterSet):
         if not value:
             return queryset
 
-        device_type = ContentType.objects.get_for_model(Device)
+        # Otteniamo i ContentType necessari
+        device_ct = ContentType.objects.get_for_model(Device)
+        vm_ct = ContentType.objects.get_for_model(VirtualMachine)
+        service_ct = ContentType.objects.get_for_model(Service)
 
-        # Otteniamo gli ID dei device come stringhe
-        device_ids = Device.objects.filter(site=value).values_list('id', flat=True)
-        device_ids_str = [str(id) for id in device_ids]  # Conversione in stringa
+        # IDs degli oggetti nel sito selezionato
+        device_ids = list(Device.objects.filter(site=value).values_list('id', flat=True))
+        vm_ids = list(VirtualMachine.objects.filter(site=value).values_list('id', flat=True))
 
+        # Per i servizi, cerchiamo quelli collegati a device o VM di quel sito
+        service_ids = list(Service.objects.filter(
+            Q(device__site=value) | Q(virtual_machine__site=value)
+        ).values_list('id', flat=True))
+
+        # Convertiamo tutto in stringhe per il match con assigned_object_id
+        device_ids_str = [str(x) for x in device_ids]
+        vm_ids_str = [str(x) for x in vm_ids]
+        service_ids_str = [str(x) for x in service_ids]
+
+        # Filtriamo il queryset originale combinando le condizioni
         return queryset.filter(
-            assigned_object_type=device_type,
-            assigned_object_id__in=device_ids_str
+            (Q(assigned_object_type=device_ct) & Q(assigned_object_id__in=device_ids_str)) |
+            (Q(assigned_object_type=vm_ct) & Q(assigned_object_id__in=vm_ids_str)) |
+            (Q(assigned_object_type=service_ct) & Q(assigned_object_id__in=service_ids_str))
         )
 
     class Meta:
         model = JournalEntry
-        fields = ['created', 'created_by', 'tag']
+        fields = ['created_by', 'tag']
