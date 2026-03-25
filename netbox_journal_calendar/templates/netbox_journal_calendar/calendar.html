@@ -38,23 +38,31 @@
                                 {% with entries=calendar_data|get_item:day %}
                                     {% for entry in entries %}
                                         <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
-                                            {% if entry.kind == 'info' %}border-info bg-info-subtle
-                                            {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
-                                            {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
-                                            {% elif entry.kind == 'success' %}border-success bg-success-subtle
-                                            {% else %}border-secondary bg-light{% endif %}">
-                                            <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
-                                                <strong>
-                                                    {% with ct=entry.assigned_object_type.model %}
-                                                        {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
-                                                        {% elif ct == 'virtualmachine' %}<i class="mdi mdi-cube-outline text-info"></i>
-                                                        {% elif ct == 'service' %}<i class="mdi mdi-cloud-outline text-warning"></i>
-                                                        {% else %}<i class="mdi mdi-note-text-outline text-muted"></i>{% endif %}
-                                                    {% endwith %}
-                                                    {{ entry.created|date:"H:i" }}
-                                                </strong>: {{ entry.comments|truncatechars:12 }}
-                                            </a>
-                                        </div>
+    {% if entry.kind == 'info' %}border-info bg-info-subtle
+    {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
+    {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
+    {% elif entry.kind == 'success' %}border-success bg-success-subtle
+    {% else %}border-secondary bg-light{% endif %}"
+    {# POPUP AL PASSAGGIO DEL MOUSE #}
+    title="Oggetto: {{ entry.assigned_object }}
+Utente: {{ entry.created_by.username }}
+---
+{{ entry.comments }}">
+    
+    <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
+        <strong>
+            {% with ct=entry.assigned_object_type.model %}
+                {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
+                {% elif ct == 'virtualmachine' %}<i class="mdi mdi-cube-outline text-info"></i>
+                {% elif ct == 'service' %}<i class="mdi mdi-cloud-outline text-warning"></i>
+                {% else %}<i class="mdi mdi-note-text-outline text-muted"></i>{% endif %}
+            {% endwith %}
+            {{ entry.created|date:"H:i" }}
+        </strong>
+        {# Mostriamo un'anteprima breve del commento #}
+        : {{ entry.comments|truncatechars:12 }}
+    </a>
+</div>
                                     {% endfor %}
                                 {% endwith %}
                             {% endif %}
