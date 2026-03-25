@@ -10,16 +10,19 @@
                 <form method="get">
                     {{ filter_form.as_p }}
                     <button type="submit" class="btn btn-primary w-100">Applica</button>
+                    <a href="." class="btn btn-outline-secondary w-100 mt-2">Reset</a>
                 </form>
             </div>
         </div>
     </div>
     <div class="col-md-9">
-        <h2 class="text-center">{{ month_name }} {{ year }}</h2>
-        <div class="card mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>{{ month_name }} {{ year }}</h2>
+        </div>
+        <div class="card">
             <table class="table table-bordered" style="table-layout: fixed;">
                 <thead>
-                    <tr class="text-center">
+                    <tr class="text-center bg-light">
                         <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
                     </tr>
                 </thead>
@@ -27,31 +30,34 @@
                     {% for week in month_days %}
                     <tr>
                         {% for day in week %}
-                        <td style="height: 120px; vertical-align: top;">
+                        <td style="height: 140px; vertical-align: top; overflow-y: auto;">
                             {% if day != 0 %}
-    <span class="badge bg-secondary mb-1">{{ day }}</span>
-    
-    {# Usa il filtro get_item per recuperare la lista delle entries per il giorno corrente #}
-    {% with entries=calendar_data|get_item:day %}
-        {% if entries %}
-            {% for entry in entries %}
-                <div class="small p-1 mb-1 border-start border-4 rounded 
-                    {% if entry.kind == 'info' %}border-info bg-info-subtle
-                    {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
-                    {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
-                    {% elif entry.kind == 'success' %}border-success bg-success-subtle
-                    {% else %}border-secondary bg-light{% endif %}"
-                    style="font-size: 0.75rem;"
-                    title="{{ entry.comments }}">
-                    
-                    <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
-                        <strong>{{ entry.created|date:"H:i" }}</strong> - {{ entry.comments|truncatechars:15 }}
-                    </a>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-{% endif %}
+                                <span class="badge bg-secondary mb-2">{{ day }}</span>
+                                {% with day_entries=calendar_data|get_item:day %}
+                                    {% for entry in day_entries %}
+                                        <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
+                                            {% if entry.kind == 'info' %}border-info bg-info-subtle
+                                            {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
+                                            {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
+                                            {% elif entry.kind == 'success' %}border-success bg-success-subtle
+                                            {% else %}border-secondary bg-light{% endif %}"
+                                            style="font-size: 0.7rem;">
+                                            
+                                            <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
+                                                <strong>{{ entry.created|date:"H:i" }}</strong>: {{ entry.comments|truncatechars:20 }}
+                                            </a>
+                                            
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                {% for tag in entry.tags.all %}
+                                                    <span class="badge" style="background-color: #{{ tag.color }}; font-size: 0.55rem;">
+                                                        {{ tag.name }}
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endwith %}
+                            {% endif %}
                         </td>
                         {% endfor %}
                     </tr>

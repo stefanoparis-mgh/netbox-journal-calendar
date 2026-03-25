@@ -8,7 +8,9 @@ from .filtersets import JournalCalendarFilterSet
 
 class JournalCalendarView(View):
     def get(self, request):
-        queryset = JournalEntry.objects.all()
+        # Prefetch tags per evitare centinaia di query al DB
+        queryset = JournalEntry.objects.prefetch_related('tags').all()
+
         filterset = JournalCalendarFilterSet(request.GET, queryset=queryset)
         queryset = filterset.qs
 

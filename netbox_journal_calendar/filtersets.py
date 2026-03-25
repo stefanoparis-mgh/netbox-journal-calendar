@@ -1,6 +1,6 @@
 import django_filters
 from netbox.filtersets import NetBoxModelFilterSet
-from extras.models import JournalEntry
+from extras.models import JournalEntry, Tag
 from dcim.models import Device, Site
 from extras.choices import JournalEntryKindChoices
 
@@ -20,6 +20,12 @@ class JournalCalendarFilterSet(NetBoxModelFilterSet):
         label='Tipo',
         widget=django_filters.widgets.CSVWidget
     )
+    tag = django_filters.ModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        field_name='tags__slug',
+        to_field_name='slug',
+        label='Tags',
+    )
 
     def filter_by_site(self, queryset, name, value):
         if not value: return queryset
@@ -27,4 +33,4 @@ class JournalCalendarFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = JournalEntry
-        fields = ['id', 'created', 'created_by', 'kind', 'cf']
+        fields = ['id', 'created', 'created_by', 'kind', 'cf', 'tag']
