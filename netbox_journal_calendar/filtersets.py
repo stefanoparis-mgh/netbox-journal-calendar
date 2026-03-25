@@ -2,6 +2,7 @@ import django_filters
 from extras.models import JournalEntry, Tag
 from dcim.models import Device, Site
 from extras.choices import JournalEntryKindChoices
+from django.contrib.contenttypes.models import ContentType
 
 # Usiamo django_filters.FilterSet per avere il controllo totale sui campi
 class JournalCalendarFilterSet(django_filters.FilterSet):
