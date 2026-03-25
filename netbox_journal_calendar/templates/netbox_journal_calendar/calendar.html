@@ -100,34 +100,49 @@
 </div>
 {% endblock %}
 
-{# USARE IL BLOCCO FOOTER SE JAVASCRIPT NON CARICA #}
-{% block footer %}
-    {{ block.super }}
-    <script>
-        (function() {
-            function initPopovers() {
-                var bs = window.bootstrap;
-                if (bs && bs.Popover) {
-                    var triggers = document.querySelectorAll('[data-bs-toggle="popover"]');
-                    console.log("Journal Calendar: Trovati " + triggers.length + " elementi.");
-                    
-                    triggers.forEach(function (el) {
-                        // Rimuove il title nativo per evitare il popup grigio del browser
-                        el.removeAttribute('title');
-                        
-                        new bs.Popover(el, {
-                            html: true,
-                            sanitize: false,
-                            container: 'body',
-                            trigger: 'hover focus',
-                            placement: 'auto'
-                        });
-                    });
-                } else {
-                    setTimeout(initPopovers, 200);
-                }
-            }
+{% block javascript %}
+<script type="module">
+    // In NetBox 4.x, bootstrap e i suoi componenti sono esportati dal bundle principale
+    // Proviamo i due percorsi comuni a seconda della sotto-versione 4.x
+    let Popover;
+    try {
+        // Percorso standard NetBox 4
+        const netbox = await import('/static/netbox.js');
+        Popover = netbox.Popover;
+    } catch (e) {
+        try {
+            // Percorso alternativo in alcune build
+            const bundle = await import('/static/dist/netbox.js');
+            Popover = bundle.Popover;
+        } catch (e2) {
+            console.error("Journal Calendar: Impossibile trovare il modulo Popover di NetBox.");
+        }
+    }
+
+    if (Popover) {
+        const initPopovers = () => {
+            const triggers = document.querySelectorAll('[data-bs-toggle="popover"]');
+            console.log(`Journal Calendar: Inizializzazione di ${triggers.length} popover.`);
+            
+            triggers.forEach(el => {
+                // Rimuoviamo il title per evitare il tooltip nativo
+                el.removeAttribute('title');
+                
+                new Popover(el, {
+                    html: true,
+                    sanitize: false,
+                    container: 'body',
+                    trigger: 'hover',
+                    placement: 'auto'
+                });
+            });
+        };
+
+        if (document.readyState === 'complete') {
+            initPopovers();
+        } else {
             window.addEventListener('load', initPopovers);
-        })();
-    </script>
+        }
+    }
+</script>
 {% endblock %}
