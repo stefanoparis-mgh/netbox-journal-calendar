@@ -34,4 +34,4 @@ class JournalCalendarFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = JournalEntry
-        fields = ['id', 'created', 'created_by', 'kind', 'cf', 'tag']
+        fields = ['id', 'created', 'created_by', 'kind', 'tag']
