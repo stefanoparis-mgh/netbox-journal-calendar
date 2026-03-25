@@ -37,18 +37,23 @@
                                 <div class="mb-1"><span class="fw-bold text-secondary">{{ day }}</span></div>
                                 {% with entries=calendar_data|get_item:day %}
                                     {% for entry in entries %}
-                                        <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
+<div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
     {% if entry.kind == 'info' %}border-info bg-info-subtle
     {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
     {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
     {% elif entry.kind == 'success' %}border-success bg-success-subtle
     {% else %}border-secondary bg-light{% endif %}"
-    {# POPUP AL PASSAGGIO DEL MOUSE #}
-    title="Oggetto: {{ entry.assigned_object }}
-Utente: {{ entry.created_by.username }}
----
-{{ entry.comments }}">
     
+    {# CONFIGURAZIONE POPOVER BOOTSTRAP #}
+    data-bs-toggle="popover"
+    data-bs-trigger="hover"
+    data-bs-html="true"
+    title="<i class='mdi mdi-clock-outline'></i> {{ entry.created|date:'H:i' }} - {{ entry.assigned_object }}"
+    data-bs-content="<div class='mb-1'><strong>Utente:</strong> {{ entry.created_by.get_full_name|default:entry.created_by.username }}</div>
+                     <div class='mb-1'><strong>Tipo:</strong> <span class='badge bg-secondary'>{{ entry.get_kind_display }}</span></div>
+                     <hr class='my-1'>
+                     <div class='text-muted small'>{{ entry.comments|linebreaksbr }}</div>"
+>
     <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
         <strong>
             {% with ct=entry.assigned_object_type.model %}
@@ -59,10 +64,10 @@ Utente: {{ entry.created_by.username }}
             {% endwith %}
             {{ entry.created|date:"H:i" }}
         </strong>
-        {# Mostriamo un'anteprima breve del commento #}
         : {{ entry.comments|truncatechars:12 }}
     </a>
 </div>
+
                                     {% endfor %}
                                 {% endwith %}
                             {% endif %}
@@ -75,4 +80,14 @@ Utente: {{ entry.created_by.username }}
         </div>
     </div>
 </div>
+{% endblock %}
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl)
+        })
+    });
+</script>
 {% endblock %}

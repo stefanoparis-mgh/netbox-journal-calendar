@@ -8,12 +8,14 @@ from .filtersets import JournalCalendarFilterSet
 
 class JournalCalendarView(View):
     def get(self, request):
+        # In views.py
         queryset = JournalEntry.objects.prefetch_related(
             'tags',
             'created_by',
             'assigned_object_type',
-            'assigned_object'  
+            'assigned_object'
         ).all()
+
         filterset = JournalCalendarFilterSet(request.GET, queryset=queryset)
         queryset = filterset.qs
 
