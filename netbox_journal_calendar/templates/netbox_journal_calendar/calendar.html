@@ -86,21 +86,21 @@
 {% endblock %}
 {% block javascript %}
 <script type="module">
-    // In NetBox 4.x, importiamo i componenti dal bundle di NetBox
-    import { Popover } from '/static/dist/netbox.js';
+    // Importiamo il componente Popover dal bundle nativo di NetBox 4.x
+    import { Popover } from '/static/netbox.js';
 
     function initPopovers() {
         const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-        [...popoverTriggerList].map(popoverTriggerEl => {
-            // Rimuoviamo il title nativo per evitare conflitti col browser
-            const title = popoverTriggerEl.getAttribute('data-bs-title') || popoverTriggerEl.getAttribute('title');
-            const content = popoverTriggerEl.getAttribute('data-bs-content');
+        popoverTriggerList.forEach(el => {
+            // Estraiamo il contenuto dagli attributi data-bs-*
+            const title = el.getAttribute('data-bs-title');
+            const content = el.getAttribute('data-bs-content');
             
-            return new Popover(popoverTriggerEl, {
+            new Popover(el, {
                 title: title,
                 content: content,
                 html: true,
-                sanitize: false,
+                sanitize: false, // Necessario per mostrare i badge colorati dei tag
                 trigger: 'hover',
                 container: 'body',
                 placement: 'auto'
@@ -108,7 +108,7 @@
         });
     }
 
-    // Inizializziamo dopo il caricamento del DOM
+    // Inizializzazione al caricamento del modulo
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initPopovers);
     } else {
