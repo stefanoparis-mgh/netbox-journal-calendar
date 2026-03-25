@@ -85,34 +85,43 @@
 </div>
 {% endblock %}
 {% block javascript %}
-<script type="module">
-    // Importiamo il componente Popover dal bundle nativo di NetBox 4.x
-    import { Popover } from '/static/netbox.js';
-
-    function initPopovers() {
-        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-        popoverTriggerList.forEach(el => {
-            // Estraiamo il contenuto dagli attributi data-bs-*
-            const title = el.getAttribute('data-bs-title');
-            const content = el.getAttribute('data-bs-content');
+<script>
+    (function() {
+        function initPopovers() {
+            // In NetBox 4.x, bootstrap è solitamente disponibile globalmente 
+            // dopo che il bundle principale è stato caricato.
+            var bs = window.bootstrap;
             
-            new Popover(el, {
-                title: title,
-                content: content,
-                html: true,
-                sanitize: false, // Necessario per mostrare i badge colorati dei tag
-                trigger: 'hover',
-                container: 'body',
-                placement: 'auto'
-            });
-        });
-    }
+            if (bs && bs.Popover) {
+                var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+                popoverTriggerList.forEach(function (el) {
+                    // Recupera i dati dagli attributi data-bs-*
+                    var title = el.getAttribute('data-bs-title');
+                    var content = el.getAttribute('data-bs-content');
+                    
+                    new bs.Popover(el, {
+                        title: title,
+                        content: content,
+                        html: true,
+                        sanitize: false,
+                        trigger: 'hover',
+                        container: 'body',
+                        placement: 'auto'
+                    });
+                });
+                console.log("Journal Calendar: Popovers initialized.");
+            } else {
+                // Se bootstrap non è ancora pronto, riprova tra poco
+                setTimeout(initPopovers, 100);
+            }
+        }
 
-    // Inizializzazione al caricamento del modulo
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initPopovers);
-    } else {
-        initPopovers();
-    }
+        // Avvia l'inizializzazione
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPopovers);
+        } else {
+            initPopovers();
+        }
+    })();
 </script>
 {% endblock %}
