@@ -3,8 +3,23 @@
 
 {% block extra_styles %}
 <style>
-    .popover { max-width: 350px; z-index: 1060; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    .popover-header { font-weight: bold; background-color: #f8f9fa; border-bottom: 1px solid #eee; }
+    /* Forza lo stile del popover per sovrastare i default di NetBox */
+    .popover {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        background-color: #fff !important;
+        max-width: 320px !important;
+    }
+    .popover-header {
+        background-color: #f8f9fa !important;
+        border-bottom: 1px solid #dee2e6 !important;
+        font-weight: bold !important;
+        padding: 8px 12px !important;
+    }
+    .popover-body {
+        padding: 12px !important;
+        color: #333 !important;
+    }
 </style>
 {% endblock %}
 
@@ -40,14 +55,14 @@
                                 {% with entries=calendar_data|get_item:day %}
                                     {% for entry in entries %}
                                         <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
-                                            {% if entry.kind == 'info' %}border-info bg-info-subtle
-                                            {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
-                                            {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
-                                            {% elif entry.kind == 'success' %}border-success bg-success-subtle
-                                            {% else %}border-secondary bg-light{% endif %}"
-                                            data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true" data-bs-placement="top"
-                                            title="{{ entry.assigned_object }}"
-                                            data-bs-content="<div class='mb-1 small text-muted'><strong>Utente:</strong> {{ entry.created_by.username }}</div><div class='mb-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; font-size: 0.6rem; margin-right: 2px;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='mt-1 small'>{{ entry.comments|linebreaksbr }}</div>">
+    {% if entry.kind == 'info' %}border-info bg-info-subtle
+    {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
+    ... (resto dei colori) ... {% endif %}"
+    
+    data-bs-toggle="popover"
+    title="<i class='mdi mdi-clock-outline'></i> {{ entry.created|date:'H:i' }} - {{ entry.assigned_object }}"
+    data-bs-content="<div class='mb-1'><strong>Utente:</strong> {{ entry.created_by.username }}</div><div class='mb-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; font-size: 0.6rem; color: #fff;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='small text-muted'>{{ entry.comments|linebreaksbr }}</div>"
+>
                                             <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
                                                 <strong>
                                                     {% with ct=entry.assigned_object_type.model %}
@@ -73,14 +88,30 @@
     </div>
 </div>
 {% endblock %}
-
 {% block javascript %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-        popoverTriggerList.map(function (popoverTriggerEl) {
-            return new bootstrap.Popover(popoverTriggerEl, { html: true, sanitize: false })
-        })
-    });
+    // Usiamo una funzione che riprova l'inizializzazione se Bootstrap non è pronto
+    function initPopovers() {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Popover) {
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.map(function (popoverTriggerEl) {
+                // Rimuoviamo il title originale per evitare il popup grigio del browser
+                var titleText = popoverTriggerEl.getAttribute('title');
+                popoverTriggerEl.removeAttribute('title');
+                
+                return new bootstrap.Popover(popoverTriggerEl, {
+                    title: titleText,
+                    html: true,
+                    sanitize: false,
+                    trigger: 'hover',
+                    placement: 'top',
+                    container: 'body' // Evita problemi di ritaglio nella tabella
+                });
+            });
+        } else {
+            setTimeout(initPopovers, 100);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', initPopovers);
 </script>
 {% endblock %}
