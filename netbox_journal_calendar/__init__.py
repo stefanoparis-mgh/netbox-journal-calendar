@@ -1,11 +1,11 @@
-from netbox.plugins import NetBoxPlugin
 
-class JournalCalendarConfig(NetBoxPlugin):
+from netbox.plugins import PluginConfig
+
+class JournalCalendarConfig(PluginConfig): # Usa PluginConfig
     name = 'netbox_journal_calendar'
     verbose_name = 'Journal Calendar'
-    description = 'Visualizza le Journal Entries in un calendario filtrabile'
-    version = '1.1.0'
+    description = 'Calendario per Journal Entries'
+    version = '1.2.0'
     base_url = 'journal-calendar'
-    default_settings = {}
 
 config = JournalCalendarConfig
