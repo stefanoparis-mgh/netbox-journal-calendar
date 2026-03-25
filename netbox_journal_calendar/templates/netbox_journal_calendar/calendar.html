@@ -57,37 +57,29 @@
                     <tr>
                         {% for day in week %}
                         <td style="height: 150px; vertical-align: top; overflow-y: auto; background-color: {% if day == 0 %}#f8f9fa{% else %}white{% endif %};">
-                            {% if day != 0 %}
-                                <span class="badge bg-secondary mb-2">{{ day }}</span>
-                                
-                                {# Estrazione delle entry per il giorno corrente tramite il filtro custom #}
-                                {% with entries=calendar_data|get_item:day %}
-                                    {% for entry in entries %}
-                                        <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
-                                            {% if entry.kind == 'info' %}border-info bg-info-subtle
-                                            {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
-                                            {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
-                                            {% elif entry.kind == 'success' %}border-success bg-success-subtle
-                                            {% else %}border-secondary bg-light{% endif %}"
-                                            title="{{ entry.comments }}">
-                                            
-                                            <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
-                                                <strong>{{ entry.created|date:"H:i" }}</strong>: {{ entry.comments|truncatechars:20 }}
-                                            </a>
-                                            
-                                            <!-- Visualizzazione Tags -->
-                                            <div class="d-flex flex-wrap gap-1 mt-1">
-                                                {% for tag in entry.tags.all %}
-                                                    <span class="badge" style="background-color: #{{ tag.color }}; font-size: 0.55rem; color: white;">
-                                                        {{ tag.name }}
-                                                    </span>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                {% endwith %}
-                            {% endif %}
-                        </td>
+    {% if day != 0 %}
+        {# Il numero del giorno deve essere SEMPRE fuori da ogni altro tag di controllo #}
+        <span class="badge bg-secondary mb-2">{{ day }}</span>
+        
+        {# Ora carichiamo le entries #}
+        {% with entries=calendar_data|get_item:day %}
+            {% for entry in entries %}
+                <div class="small p-1 mb-1 border-start border-4 rounded shadow-sm
+                    {% if entry.kind == 'info' %}border-info bg-info-subtle
+                    {% elif entry.kind == 'danger' %}border-danger bg-danger-subtle
+                    {% elif entry.kind == 'warning' %}border-warning bg-warning-subtle
+                    {% elif entry.kind == 'success' %}border-success bg-success-subtle
+                    {% else %}border-secondary bg-light{% endif %}"
+                    title="{{ entry.comments }}">
+                    
+                    <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
+                        <strong>{{ entry.created|date:"H:i" }}</strong>: {{ entry.comments|truncatechars:15 }}
+                    </a>
+                </div>
+            {% endfor %}
+        {% endwith %}
+    {% endif %}
+</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}

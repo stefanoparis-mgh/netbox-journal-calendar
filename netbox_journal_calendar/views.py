@@ -35,7 +35,7 @@ class JournalCalendarView(View):
 
         calendar_data = {}
         for entry in entries:
-            day = entry.created.day
+            day = int(entry.created.day)
             if day not in calendar_data:
                 calendar_data[day] = []
             calendar_data[day].append(entry)
