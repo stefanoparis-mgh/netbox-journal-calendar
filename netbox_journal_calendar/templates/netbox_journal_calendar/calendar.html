@@ -85,36 +85,34 @@
 </div>
 {% endblock %}
 {% block javascript %}
-<script>
-    (function() {
-        function initPopovers() {
-            // Verifica se Bootstrap è disponibile (NetBox 4 usa BS5)
-            var bs = window.bootstrap || bootstrap;
-            if (typeof bs !== 'undefined' && bs.Popover) {
-                var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-                popoverTriggerList.map(function (el) {
-                    // Rimuoviamo eventuali title per evitare il tooltip nativo del browser
-                    el.removeAttribute('title');
-                    return new bs.Popover(el, {
-                        html: true,
-                        sanitize: false,
-                        container: 'body',
-                        trigger: 'hover',
-                        boundary: 'viewport'
-                    });
-                });
-                console.log("Journal Calendar: Popovers initialized.");
-            } else {
-                // Se non è ancora pronto, riprova tra 100ms
-                setTimeout(initPopovers, 100);
-            }
-        }
+<script type="module">
+    // In NetBox 4.x, importiamo i componenti dal bundle di NetBox
+    import { Popover } from '/static/dist/netbox.js';
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initPopovers);
-        } else {
-            initPopovers();
-        }
-    })();
+    function initPopovers() {
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        [...popoverTriggerList].map(popoverTriggerEl => {
+            // Rimuoviamo il title nativo per evitare conflitti col browser
+            const title = popoverTriggerEl.getAttribute('data-bs-title') || popoverTriggerEl.getAttribute('title');
+            const content = popoverTriggerEl.getAttribute('data-bs-content');
+            
+            return new Popover(popoverTriggerEl, {
+                title: title,
+                content: content,
+                html: true,
+                sanitize: false,
+                trigger: 'hover',
+                container: 'body',
+                placement: 'auto'
+            });
+        });
+    }
+
+    // Inizializziamo dopo il caricamento del DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPopovers);
+    } else {
+        initPopovers();
+    }
 </script>
 {% endblock %}
