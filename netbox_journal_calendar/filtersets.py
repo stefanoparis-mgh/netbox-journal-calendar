@@ -28,7 +28,8 @@ class JournalCalendarFilterSet(NetBoxModelFilterSet):
     )
 
     def filter_by_site(self, queryset, name, value):
-        if not value: return queryset
+        if not value:
+            return queryset
         return queryset.filter(device__site=value)
 
     class Meta:
