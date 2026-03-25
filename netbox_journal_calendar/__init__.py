@@ -5,7 +5,7 @@ class JournalCalendarConfig(PluginConfig): # Usa PluginConfig
     name = 'netbox_journal_calendar'
     verbose_name = 'Journal Calendar'
     description = 'Calendario interattivo per Journal Entries (Device, VM, Service)'
-    version = '1.5.0'
+    version = '1.5.1'
     base_url = 'journal-calendar'
 
 config = JournalCalendarConfig

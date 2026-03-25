@@ -3,15 +3,20 @@
 
 {% block extra_styles %}
 <style>
-    /* Forza la visibilità sopra la tabella di NetBox */
+    /* Forza la visibilità e il colore delle entries */
+    .journal-entry { cursor: pointer; position: relative; z-index: 1; }
+    .bg-info-subtle { background-color: #cff4fc !important; border-color: #0dcaf0 !important; }
+    .bg-danger-subtle { background-color: #f8d7da !important; border-color: #dc3545 !important; }
+    .bg-warning-subtle { background-color: #fff3cd !important; border-color: #ffc107 !important; }
+    .bg-success-subtle { background-color: #d1e7dd !important; border-color: #198754 !important; }
+    
+    /* Stile Popover */
     .popover { 
         z-index: 9999 !important; 
+        opacity: 1 !important; 
         box-shadow: 0 0.5rem 1rem rgba(0,0,0,.2) !important;
-        opacity: 1 !important;
-        display: block; /* Aiuta il debug se fosse hidden */
+        border: 1px solid #dee2e6 !important;
     }
-    /* Ripristino bordi colorati se spariti */
-    .border-start { border-left-width: 4px !important; }
 </style>
 {% endblock %}
 
@@ -95,29 +100,34 @@
 </div>
 {% endblock %}
 
-{% block javascript %}
-<script>
-    (function() {
-        function initPopovers() {
-            var bs = window.bootstrap;
-            if (bs && bs.Popover) {
-                // Seleziona tutti gli elementi con l'attributo data-bs-toggle
-                var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-                popoverTriggerList.forEach(function (el) {
-                    // Inizializzazione pulita
-                    new bs.Popover(el, {
-                        container: 'body',
-                        html: true,
-                        sanitize: false,
-                        trigger: 'hover focus' // Aggiunto focus per compatibilità mobile/tablet
+{# USARE IL BLOCCO FOOTER SE JAVASCRIPT NON CARICA #}
+{% block footer %}
+    {{ block.super }}
+    <script>
+        (function() {
+            function initPopovers() {
+                var bs = window.bootstrap;
+                if (bs && bs.Popover) {
+                    var triggers = document.querySelectorAll('[data-bs-toggle="popover"]');
+                    console.log("Journal Calendar: Trovati " + triggers.length + " elementi.");
+                    
+                    triggers.forEach(function (el) {
+                        // Rimuove il title nativo per evitare il popup grigio del browser
+                        el.removeAttribute('title');
+                        
+                        new bs.Popover(el, {
+                            html: true,
+                            sanitize: false,
+                            container: 'body',
+                            trigger: 'hover focus',
+                            placement: 'auto'
+                        });
                     });
-                });
-                console.log("Journal Calendar: " + popoverTriggerList.length + " popovers attivati.");
-            } else {
-                setTimeout(initPopovers, 200);
+                } else {
+                    setTimeout(initPopovers, 200);
+                }
             }
-        }
-        window.addEventListener('load', initPopovers);
-    })();
-</script>
+            window.addEventListener('load', initPopovers);
+        })();
+    </script>
 {% endblock %}
