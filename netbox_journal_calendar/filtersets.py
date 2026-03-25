@@ -30,7 +30,19 @@ class JournalCalendarFilterSet(django_filters.FilterSet):
     def filter_by_site(self, queryset, name, value):
         if not value:
             return queryset
-        return queryset.filter(device__site=value)
+
+        # 1. Otteniamo il ContentType per il modello Device
+        device_type = ContentType.objects.get_for_model(Device)
+
+        # 2. Filtriamo le JournalEntry che:
+        #    - Sono collegate a un Device (assigned_object_type)
+        #    - Il cui ID (assigned_object_id) appartiene a un Device di quel Sito
+        device_ids = Device.objects.filter(site=value).values_list('id', flat=True)
+
+        return queryset.filter(
+            assigned_object_type=device_type,
+            assigned_object_id__in=device_ids
+        )
 
     class Meta:
         model = JournalEntry
