@@ -59,9 +59,9 @@
                         <td style="height: 160px; vertical-align: top; padding: 8px; {% if day == 0 %}background-color: #f8f9fa;{% else %}background-color: white;{% endif %}">
                             {% if day != 0 %}
                                 {# IL NUMERO DEL GIORNO: deve essere fuori da ogni tag 'with' o 'for' #}
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge rounded-pill bg-secondary" style="font-size: 0.85rem;">{{ day }}</span>
-                                </div>
+                                <div class="p-1">
+            <span class="badge bg-dark">{{ day }}</span>
+        </div>
                                 
                                 {# LISTA INTERVENTI #}
                                 <div style="overflow-y: auto; max-height: 110px;">
