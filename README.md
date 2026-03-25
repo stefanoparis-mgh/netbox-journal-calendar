@@ -1,21 +1,6 @@
 # 📅 NetBox Journal Calendar Plugin
 
-[![License](https://img.shields.io)](https://opensource.org)
-[![NetBox Compatibility](https://img.shields.io)](https://github.com)
-
 Un plugin per **NetBox** che trasforma le tue Journal Entries in un calendario interattivo e filtrabile. Visualizza cronologicamente gli interventi, i guasti e le attività di manutenzione direttamente sulla griglia temporale.
-
----
-
-## 📸 Screenshots
-
-### Vista Mensile del Calendario
-![Vista Calendario](https://raw.githubusercontent.com)
-*Esempio della griglia mensile con eventi colorati per tipo.*
-
-### Filtri Avanzati
-![Filtri](https://raw.githubusercontent.com)
-*Filtra per Sito, Device o Custom Fields per isolare gli interventi specifici.*
 
 ---
 
