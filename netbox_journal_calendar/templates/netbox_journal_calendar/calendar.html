@@ -1,76 +1,80 @@
 {% extends 'base/layout.html' %}
 {% load calendar_extras %}
 
-
 {% block extra_styles %}
 <style>
-    /* Ripristiniamo i colori se spariti */
+    /* Stili per le celle e i colori */
     .bg-info-subtle { background-color: #cff4fc !important; border-color: #0dcaf0 !important; }
     .bg-danger-subtle { background-color: #f8d7da !important; border-color: #dc3545 !important; }
     .bg-warning-subtle { background-color: #fff3cd !important; border-color: #ffc107 !important; }
     .bg-success-subtle { background-color: #d1e7dd !important; border-color: #198754 !important; }
     
-    /* Stile Popover */
-    .popover { max-width: 320px !important; border-radius: 8px; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); }
+    .popover { max-width: 320px !important; border-radius: 8px; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); border: 1px solid #dee2e6; }
     .popover-header { font-weight: bold; background-color: #f8f9fa; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="row">
+    <!-- Filtri -->
     <div class="col-md-3">
         <div class="card shadow-sm">
             <div class="card-header bg-light"><h5>Filtri</h5></div>
             <div class="card-body">
-                <form method="get">{{ filter_form.as_p }}
+                <form method="get">
+                    {{ filter_form.as_p }}
                     <button type="submit" class="btn btn-primary w-100 mt-2">Applica</button>
                     <a href="." class="btn btn-outline-secondary w-100 mt-2">Reset</a>
                 </form>
             </div>
         </div>
     </div>
+
+    <!-- Calendario -->
     <div class="col-md-9">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <a href="?month={{ prev_month }}&year={{ prev_year }}{% for k,v in request.GET.items %}{% if k != 'month' and k != 'year' %}&{{k}}={{v}}{% endif %}{% endfor %}" class="btn btn-outline-primary btn-sm">&lt; Precedente</a>
             <h2 class="mb-0">{{ month_name }} {{ year }}</h2>
             <a href="?month={{ next_month }}&year={{ next_year }}{% for k,v in request.GET.items %}{% if k != 'month' and k != 'year' %}&{{k}}={{v}}{% endif %}{% endfor %}" class="btn btn-outline-primary btn-sm">Successivo &gt;</a>
         </div>
-        <div class="card shadow-sm overflow-hidden">
+
+        <div class="card shadow-sm">
             <table class="table table-bordered mb-0" style="table-layout: fixed;">
-                <thead><tr class="text-center bg-light"><th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th></tr></thead>
+                <thead>
+                    <tr class="text-center bg-light">
+                        <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
+                    </tr>
+                </thead>
                 <tbody>
                     {% for week in month_days %}
                     <tr>
                         {% for day in week %}
-                        <td style="height: 160px; vertical-align: top; background-color: {% if day == 0 %}#f8f9fa{% else %}white{% endif %}; border: 1px solid #dee2e6;">
+                        <td style="height: 150px; vertical-align: top; background-color: {% if day == 0 %}#f8f9fa{% else %}white{% endif %}; border: 1px solid #dee2e6;">
                             {% if day != 0 %}
-                                <div class="mb-1 px-1"><span class="fw-bold text-secondary">{{ day }}</span></div>
+                                <div class="mb-1"><span class="fw-bold text-secondary">{{ day }}</span></div>
                                 {% with entries=calendar_data|get_item:day %}
                                     {% for entry in entries %}
                                         <div class="journal-entry small p-1 mb-1 border-start border-4 rounded shadow-sm
-    {% if entry.kind == 'info' %}bg-info-subtle
-    {% elif entry.kind == 'danger' %}bg-danger-subtle
-    {% elif entry.kind == 'warning' %}bg-warning-subtle
-    {% elif entry.kind == 'success' %}bg-success-subtle
-    {% else %}bg-light border-secondary{% endif %}"
-    
-    data-bs-toggle="popover"
-    data-bs-title="{{ entry.assigned_object|escapejs }}"
-    data-bs-content="<strong>Utente:</strong> {{ entry.created_by.username }}<br><div class='my-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; color: white; font-size: 10px;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='small'>{{ entry.comments|linebreaksbr|escapejs }}</div>"
->
-
-    <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
-        <strong>
-            {% with ct=entry.assigned_object_type.model %}
-                {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
-                {% elif ct == 'virtualmachine' %}<i class="mdi mdi-cube-outline text-info"></i>
-                {% elif ct == 'service' %}<i class="mdi mdi-cloud-outline text-warning"></i>
-                {% else %}<i class="mdi mdi-note-text-outline text-muted"></i>{% endif %}
-            {% endwith %}
-            {{ entry.created|date:"H:i" }}
-        </strong>: {{ entry.comments|truncatechars:12 }}
-    </a>
-</div>
+                                            {% if entry.kind == 'info' %}bg-info-subtle
+                                            {% elif entry.kind == 'danger' %}bg-danger-subtle
+                                            {% elif entry.kind == 'warning' %}bg-warning-subtle
+                                            {% elif entry.kind == 'success' %}bg-success-subtle
+                                            {% else %}bg-light border-secondary{% endif %}"
+                                            data-bs-toggle="popover"
+                                            data-bs-title="{{ entry.assigned_object }}"
+                                            data-bs-content="<strong>Utente:</strong> {{ entry.created_by.username }}<br><div class='my-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; color: white; font-size: 10px;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='small'>{{ entry.comments|linebreaksbr }}</div>">
+                                            <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
+                                                <strong>
+                                                    {% with ct=entry.assigned_object_type.model %}
+                                                        {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
+                                                        {% elif ct == 'virtualmachine' %}<i class="mdi mdi-cube-outline text-info"></i>
+                                                        {% elif ct == 'service' %}<i class="mdi mdi-cloud-outline text-warning"></i>
+                                                        {% else %}<i class="mdi mdi-note-text-outline text-muted"></i>{% endif %}
+                                                    {% endwith %}
+                                                    {{ entry.created|date:"H:i" }}
+                                                </strong>: {{ entry.comments|truncatechars:12 }}
+                                            </a>
+                                        </div>
                                     {% endfor %}
                                 {% endwith %}
                             {% endif %}
@@ -84,44 +88,32 @@
     </div>
 </div>
 {% endblock %}
+
 {% block javascript %}
 <script>
     (function() {
+        // NON usiamo script type="module" e NON usiamo import.
+        // Aspettiamo che NetBox carichi l'oggetto bootstrap globale.
         function initPopovers() {
-            // In NetBox 4.x, bootstrap è solitamente disponibile globalmente 
-            // dopo che il bundle principale è stato caricato.
             var bs = window.bootstrap;
-            
             if (bs && bs.Popover) {
                 var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-                popoverTriggerList.forEach(function (el) {
-                    // Recupera i dati dagli attributi data-bs-*
-                    var title = el.getAttribute('data-bs-title');
-                    var content = el.getAttribute('data-bs-content');
-                    
-                    new bs.Popover(el, {
-                        title: title,
-                        content: content,
+                popoverTriggerList.map(function (el) {
+                    return new bs.Popover(el, {
                         html: true,
                         sanitize: false,
-                        trigger: 'hover',
                         container: 'body',
-                        placement: 'auto'
+                        trigger: 'hover',
+                        placement: 'top'
                     });
                 });
-                console.log("Journal Calendar: Popovers initialized.");
+                console.log("Popovers initialized successfully.");
             } else {
-                // Se bootstrap non è ancora pronto, riprova tra poco
+                // Riprova ogni 100ms finché bootstrap non è pronto
                 setTimeout(initPopovers, 100);
             }
         }
-
-        // Avvia l'inizializzazione
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initPopovers);
-        } else {
-            initPopovers();
-        }
+        initPopovers();
     })();
 </script>
 {% endblock %}
