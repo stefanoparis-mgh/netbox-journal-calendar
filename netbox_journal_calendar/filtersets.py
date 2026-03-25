@@ -17,11 +17,6 @@ class JournalCalendarFilterSet(django_filters.FilterSet):
         method='filter_by_site',
         label='Sito'
     )
-    kind = django_filters.MultipleChoiceFilter(
-        choices=JournalEntryKindChoices,
-        label='Tipo',
-        widget=django_filters.widgets.CSVWidget
-    )
     tag = django_filters.ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
         field_name='tags__slug',
