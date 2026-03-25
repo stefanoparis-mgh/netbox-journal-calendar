@@ -101,48 +101,41 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="module">
-    // In NetBox 4.x, bootstrap e i suoi componenti sono esportati dal bundle principale
-    // Proviamo i due percorsi comuni a seconda della sotto-versione 4.x
-    let Popover;
-    try {
-        // Percorso standard NetBox 4
-        const netbox = await import('/static/netbox.js');
-        Popover = netbox.Popover;
-    } catch (e) {
-        try {
-            // Percorso alternativo in alcune build
-            const bundle = await import('/static/dist/netbox.js');
-            Popover = bundle.Popover;
-        } catch (e2) {
-            console.error("Journal Calendar: Impossibile trovare il modulo Popover di NetBox.");
-        }
-    }
+<script>
+    (function() {
+        // Funzione per inizializzare i popover
+        function initPopovers() {
+            // In NetBox 4.x, bootstrap viene esposto globalmente dal file netbox.js
+            const bs = window.bootstrap;
 
-    if (Popover) {
-        const initPopovers = () => {
-            const triggers = document.querySelectorAll('[data-bs-toggle="popover"]');
-            console.log(`Journal Calendar: Inizializzazione di ${triggers.length} popover.`);
-            
-            triggers.forEach(el => {
-                // Rimuoviamo il title per evitare il tooltip nativo
-                el.removeAttribute('title');
+            if (bs && bs.Popover) {
+                const triggers = document.querySelectorAll('[data-bs-toggle="popover"]');
+                console.log(`Journal Calendar: Inizializzazione di ${triggers.length} elementi.`);
                 
-                new Popover(el, {
-                    html: true,
-                    sanitize: false,
-                    container: 'body',
-                    trigger: 'hover',
-                    placement: 'auto'
+                triggers.forEach(el => {
+                    // Rimuoviamo il title nativo per evitare conflitti col browser
+                    el.removeAttribute('title');
+                    
+                    new bs.Popover(el, {
+                        html: true,
+                        sanitize: false,
+                        container: 'body',
+                        trigger: 'hover',
+                        placement: 'top'
+                    });
                 });
-            });
-        };
+            } else {
+                // Se bootstrap non è ancora pronto, riprova tra 100ms
+                setTimeout(initPopovers, 100);
+            }
+        }
 
+        // Aspettiamo che la pagina sia completamente carica (inclusi gli script statici)
         if (document.readyState === 'complete') {
             initPopovers();
         } else {
             window.addEventListener('load', initPopovers);
         }
-    }
+    })();
 </script>
 {% endblock %}
