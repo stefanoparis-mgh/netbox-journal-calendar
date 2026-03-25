@@ -44,15 +44,19 @@
     {% elif entry.kind == 'success' %}border-success bg-success-subtle
     {% else %}border-secondary bg-light{% endif %}"
     
-    {# CONFIGURAZIONE POPOVER BOOTSTRAP #}
     data-bs-toggle="popover"
     data-bs-trigger="hover"
     data-bs-html="true"
-    title="<i class='mdi mdi-clock-outline'></i> {{ entry.created|date:'H:i' }} - {{ entry.assigned_object }}"
-    data-bs-content="<div class='mb-1'><strong>Utente:</strong> {{ entry.created_by.get_full_name|default:entry.created_by.username }}</div>
-                     <div class='mb-1'><strong>Tipo:</strong> <span class='badge bg-secondary'>{{ entry.get_kind_display }}</span></div>
+    data-bs-placement="top"
+    title="{{ entry.assigned_object }}"
+    data-bs-content="<div class='mb-1 small text-muted'><strong>Utente:</strong> {{ entry.created_by.username }}</div>
+                     <div class='mb-2'>
+                        {% for tag in entry.tags.all %}
+                            <span class='badge' style='background-color: #{{ tag.color }}; font-size: 0.6rem;'>{{ tag.name }}</span>
+                        {% endfor %}
+                     </div>
                      <hr class='my-1'>
-                     <div class='text-muted small'>{{ entry.comments|linebreaksbr }}</div>"
+                     <div class='mt-1 small'>{{ entry.comments|linebreaksbr }}</div>"
 >
     <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none">
         <strong>
@@ -67,7 +71,6 @@
         : {{ entry.comments|truncatechars:12 }}
     </a>
 </div>
-
                                     {% endfor %}
                                 {% endwith %}
                             {% endif %}
@@ -84,9 +87,14 @@
 {% block javascript %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Seleziona tutti gli elementi con il toggle popover
         var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
         var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-            return new bootstrap.Popover(popoverTriggerEl)
+            return new bootstrap.Popover(popoverTriggerEl, {
+                // Forza il rendering dell'HTML anche se Bootstrap è restrittivo
+                html: true,
+                sanitize: false 
+            })
         })
     });
 </script>
