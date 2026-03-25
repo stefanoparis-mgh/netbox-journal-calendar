@@ -3,14 +3,15 @@
 
 {% block extra_styles %}
 <style>
-    /* Stili per le celle e i colori */
-    .bg-info-subtle { background-color: #cff4fc !important; border-color: #0dcaf0 !important; }
-    .bg-danger-subtle { background-color: #f8d7da !important; border-color: #dc3545 !important; }
-    .bg-warning-subtle { background-color: #fff3cd !important; border-color: #ffc107 !important; }
-    .bg-success-subtle { background-color: #d1e7dd !important; border-color: #198754 !important; }
-    
-    .popover { max-width: 320px !important; border-radius: 8px; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); border: 1px solid #dee2e6; }
-    .popover-header { font-weight: bold; background-color: #f8f9fa; }
+    /* Forza la visibilità sopra la tabella di NetBox */
+    .popover { 
+        z-index: 9999 !important; 
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.2) !important;
+        opacity: 1 !important;
+        display: block; /* Aiuta il debug se fosse hidden */
+    }
+    /* Ripristino bordi colorati se spariti */
+    .border-start { border-left-width: 4px !important; }
 </style>
 {% endblock %}
 
@@ -54,16 +55,21 @@
                                 <div class="mb-1"><span class="fw-bold text-secondary">{{ day }}</span></div>
                                 {% with entries=calendar_data|get_item:day %}
                                     {% for entry in entries %}
-                                        <div class="journal-entry small p-1 mb-1 border-start border-4 rounded shadow-sm
-                                            {% if entry.kind == 'info' %}bg-info-subtle
-                                            {% elif entry.kind == 'danger' %}bg-danger-subtle
-                                            {% elif entry.kind == 'warning' %}bg-warning-subtle
-                                            {% elif entry.kind == 'success' %}bg-success-subtle
-                                            {% else %}bg-light border-secondary{% endif %}"
-                                            data-bs-toggle="popover"
-                                            data-bs-title="{{ entry.assigned_object }}"
-                                            data-bs-content="<strong>Utente:</strong> {{ entry.created_by.username }}<br><div class='my-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; color: white; font-size: 10px;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='small'>{{ entry.comments|linebreaksbr }}</div>">
-                                            <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
+<div class="journal-entry small p-1 mb-1 border-start border-4 rounded shadow-sm
+    {% if entry.kind == 'info' %}bg-info-subtle
+    {% elif entry.kind == 'danger' %}bg-danger-subtle
+    {% elif entry.kind == 'warning' %}bg-warning-subtle
+    {% elif entry.kind == 'success' %}bg-success-subtle
+    {% else %}bg-light border-secondary{% endif %}"
+    
+    data-bs-toggle="popover"
+    data-bs-trigger="hover"
+    data-bs-html="true"
+    data-bs-placement="top"
+    data-bs-title="{{ entry.assigned_object|default:'Dettagli' }}"
+    data-bs-content="<strong>Utente:</strong> {{ entry.created_by.username }}<br><div class='my-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; color: white; font-size: 10px;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='small'>{{ entry.comments|linebreaksbr }}</div>"
+>
+                                        <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
                                                 <strong>
                                                     {% with ct=entry.assigned_object_type.model %}
                                                         {% if ct == 'device' %}<i class="mdi mdi-server text-primary"></i>
@@ -92,42 +98,26 @@
 {% block javascript %}
 <script>
     (function() {
-        function setupPopovers() {
-            // Cerchiamo l'oggetto bootstrap in vari punti comuni di NetBox 4
-            var bs = window.bootstrap || (window.netbox ? window.netbox.bootstrap : null);
-            
+        function initPopovers() {
+            var bs = window.bootstrap;
             if (bs && bs.Popover) {
-                var elements = document.querySelectorAll('[data-bs-toggle="popover"]');
-                elements.forEach(function(el) {
-                    // Rimuoviamo il title nativo per evitare il tooltip grigio del browser
-                    if (el.hasAttribute('title')) {
-                        el.setAttribute('data-bs-original-title', el.getAttribute('title'));
-                        el.removeAttribute('title');
-                    }
-                    
-                    // Inizializzazione forzata
+                // Seleziona tutti gli elementi con l'attributo data-bs-toggle
+                var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+                popoverTriggerList.forEach(function (el) {
+                    // Inizializzazione pulita
                     new bs.Popover(el, {
+                        container: 'body',
                         html: true,
                         sanitize: false,
-                        container: 'body',
-                        trigger: 'hover',
-                        placement: 'auto'
+                        trigger: 'hover focus' // Aggiunto focus per compatibilità mobile/tablet
                     });
                 });
-                console.log("Journal Calendar: Popovers activated successfully.");
+                console.log("Journal Calendar: " + popoverTriggerList.length + " popovers attivati.");
             } else {
-                // Riprova finché il bundle di NetBox non è pronto
-                setTimeout(setupPopovers, 200);
+                setTimeout(initPopovers, 200);
             }
         }
-
-        // Avvio immediato o al caricamento
-        if (document.readyState === 'complete') {
-            setupPopovers();
-        } else {
-            window.addEventListener('load', setupPopovers);
-        }
+        window.addEventListener('load', initPopovers);
     })();
 </script>
 {% endblock %}
-
