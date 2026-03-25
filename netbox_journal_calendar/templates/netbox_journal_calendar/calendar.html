@@ -54,18 +54,11 @@
     {% elif entry.kind == 'success' %}bg-success-subtle
     {% else %}bg-light border-secondary{% endif %}"
     
-    {# USIAMO DATA ATTRIBUTES PULITI PER EVITARE CONFLITTI DI VIRGOLETTE #}
     data-bs-toggle="popover"
-    data-bs-title="{{ entry.assigned_object }}"
-    data-bs-content="<strong>Utente:</strong> {{ entry.created_by.username }}<br>
-                     <div class='my-2'>
-                        {% for tag in entry.tags.all %}
-                            <span class='badge' style='background-color: #{{ tag.color }}; color: white; font-size: 10px;'>{{ tag.name }}</span>
-                        {% endfor %}
-                     </div>
-                     <hr class='my-1'>
-                     <div class='small text-muted'>{{ entry.comments|linebreaksbr }}</div>"
+    data-bs-title="{{ entry.assigned_object|escapejs }}"
+    data-bs-content="<strong>Utente:</strong> {{ entry.created_by.username }}<br><div class='my-2'>{% for tag in entry.tags.all %}<span class='badge' style='background-color: #{{ tag.color }}; color: white; font-size: 10px;'>{{ tag.name }}</span>{% endfor %}</div><hr class='my-1'><div class='small'>{{ entry.comments|linebreaksbr|escapejs }}</div>"
 >
+
     <a href="{% url 'extras:journalentry' pk=entry.pk %}" class="text-dark text-decoration-none d-block">
         <strong>
             {% with ct=entry.assigned_object_type.model %}
@@ -93,28 +86,35 @@
 {% endblock %}
 {% block javascript %}
 <script>
-    // Usiamo una funzione che riprova l'inizializzazione se Bootstrap non è pronto
-    function initPopovers() {
-        if (typeof bootstrap !== 'undefined' && bootstrap.Popover) {
-            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-            popoverTriggerList.map(function (popoverTriggerEl) {
-                // Rimuoviamo il title originale per evitare il popup grigio del browser
-                var titleText = popoverTriggerEl.getAttribute('title');
-                popoverTriggerEl.removeAttribute('title');
-                
-                return new bootstrap.Popover(popoverTriggerEl, {
-                    title: titleText,
-                    html: true,
-                    sanitize: false,
-                    trigger: 'hover',
-                    placement: 'top',
-                    container: 'body' // Evita problemi di ritaglio nella tabella
+    (function() {
+        function initPopovers() {
+            // Verifica se Bootstrap è disponibile (NetBox 4 usa BS5)
+            var bs = window.bootstrap || bootstrap;
+            if (typeof bs !== 'undefined' && bs.Popover) {
+                var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+                popoverTriggerList.map(function (el) {
+                    // Rimuoviamo eventuali title per evitare il tooltip nativo del browser
+                    el.removeAttribute('title');
+                    return new bs.Popover(el, {
+                        html: true,
+                        sanitize: false,
+                        container: 'body',
+                        trigger: 'hover',
+                        boundary: 'viewport'
+                    });
                 });
-            });
-        } else {
-            setTimeout(initPopovers, 100);
+                console.log("Journal Calendar: Popovers initialized.");
+            } else {
+                // Se non è ancora pronto, riprova tra 100ms
+                setTimeout(initPopovers, 100);
+            }
         }
-    }
-    document.addEventListener('DOMContentLoaded', initPopovers);
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPopovers);
+        } else {
+            initPopovers();
+        }
+    })();
 </script>
 {% endblock %}
