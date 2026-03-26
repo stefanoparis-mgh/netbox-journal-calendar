@@ -3,138 +3,125 @@
 
 {% block extra_styles %}
 <style>
-    /* --- FORZATURA GRIGLIA 7 COLONNE --- */
-    .calendar-main-grid {
+    /* Usiamo un ID per avere la massima specificità CSS possibile */
+    #nbjc-calendar-wrapper {
         display: grid !important;
-        /* Crea 7 colonne uguali ed evita il collasso */
-        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
-        background-color: #dee2e6; /* Colore dei bordi */
-        gap: 1px; /* Spazio tra le celle che funge da bordo */
-        border: 1px solid #dee2e6;
+        /* Forziamo 7 colonne: se il contenitore è 1000px, ogni colonna SARÀ ~142px */
+        grid-template-columns: repeat(7, 1fr) !important;
+        grid-auto-flow: row !important;
+        gap: 1px !important;
+        background-color: #dee2e6 !important; /* Colore dei bordi */
+        border: 1px solid #dee2e6 !important;
         width: 100% !important;
+        clear: both !important;
     }
 
-    /* Intestazioni Lun, Mar, etc. */
-    .calendar-header-cell {
-        background-color: #f8f9fa;
-        text-align: center;
-        padding: 10px 0;
-        font-weight: bold;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-    }
-
-    /* Cella del Giorno */
-    .calendar-day-cell {
-        background-color: #ffffff;
+    /* Forza ogni figlio del wrapper a stare nella griglia e non espandersi */
+    #nbjc-calendar-wrapper > div {
+        display: flex !important;
+        flex-direction: column !important;
+        background-color: #ffffff !important;
         height: 140px !important;
         min-height: 140px !important;
         max-height: 140px !important;
-        padding: 6px !important;
-        overflow-y: auto !important; /* Scroll interno */
-        display: flex;
-        flex-direction: column;
+        margin: 0 !important;
+        padding: 5px !important;
+        overflow-y: auto !important;
+        box-sizing: border-box !important;
     }
 
-    .day-off { background-color: #f1f3f5 !important; }
-
-    .day-number {
-        text-align: right;
-        font-weight: bold;
-        font-size: 0.75rem;
-        color: #6c757d;
-        margin-bottom: 5px;
-        position: sticky;
-        top: 0;
-        background: inherit;
-        z-index: 10;
+    /* Header giorni (Lun, Mar...) */
+    .nbjc-header {
+        height: auto !important;
+        min-height: unset !important;
+        background-color: #f8f9fa !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        text-transform: uppercase !important;
+        font-size: 0.75rem !important;
     }
 
-    /* --- STILE ENTRY --- */
-    .calendar-entry {
+    .nbjc-day-off { background-color: #f1f3f5 !important; }
+
+    /* Entry stile "pillola" */
+    .nbjc-entry {
         display: block !important;
-        font-size: 11px !important;
-        padding: 3px 6px !important;
-        margin-bottom: 3px !important;
-        border-radius: 4px !important;
-        border-left: 4px solid #adb5bd !important;
+        font-size: 10px !important;
+        margin-bottom: 2px !important;
+        padding: 2px 4px !important;
+        border-radius: 3px !important;
+        border-left: 3px solid #888 !important;
         text-decoration: none !important;
-        color: #212529 !important;
+        color: #333 !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
-        background: #fff;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        line-height: 1.3;
+        line-height: 1.2 !important;
     }
 
-    /* Mappatura Colori */
-    .entry-info { border-left-color: #0dcaf0 !important; background-color: #cff4fc !important; }
-    .entry-success { border-left-color: #198754 !important; background-color: #d1e7dd !important; }
-    .entry-warning { border-left-color: #ffc107 !important; background-color: #fff3cd !important; }
-    .entry-danger { border-left-color: #dc3545 !important; background-color: #f8d7da !important; }
+    /* Colori forzati con ID per precedenza */
+    #nbjc-calendar-wrapper .kind-info { border-left-color: #0dcaf0 !important; background-color: #cff4fc !important; }
+    #nbjc-calendar-wrapper .kind-success { border-left-color: #198754 !important; background-color: #d1e7dd !important; }
+    #nbjc-calendar-wrapper .kind-warning { border-left-color: #ffc107 !important; background-color: #fff3cd !important; }
+    #nbjc-calendar-wrapper .kind-danger { border-left-color: #dc3545 !important; background-color: #f8d7da !important; }
 
-    /* --- TOOLTIP --- */
-    #calendar-tooltip {
+    /* TOOLTIP: Spostato fuori con JS, quindi position fixed sicura */
+    #nbjc-tooltip {
         position: fixed !important;
         display: none;
-        z-index: 10000;
+        z-index: 99999;
         background: #212529;
         color: #fff;
-        padding: 10px;
-        border-radius: 5px;
+        padding: 8px 12px;
+        border-radius: 4px;
         font-size: 12px;
-        max-width: 280px;
+        max-width: 250px;
         pointer-events: none;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col col-md-3">
+    <div class="col-md-3">
         <div class="card shadow-sm">
             <h5 class="card-header bg-light">Filtri</h5>
             <div class="card-body">
                 <form method="get">
                     {{ filter_form.as_p }}
                     <button type="submit" class="btn btn-primary w-100 mt-2">Applica</button>
-                    <a href="." class="btn btn-outline-secondary w-100 mt-1">Reset</a>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="col col-md-9">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0 fw-bold">{{ month_name }} {{ year }}</h2>
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-baseline mb-3">
+            <h2 class="fw-bold">{{ month_name }} {{ year }}</h2>
             <div class="btn-group">
-                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-sm btn-outline-secondary px-3">&larr;</a>
-                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-sm btn-outline-secondary px-3">&rarr;</a>
+                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-secondary btn-sm">←</a>
+                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-secondary btn-sm">→</a>
             </div>
         </div>
 
-        <div class="calendar-main-grid rounded shadow-sm overflow-hidden">
-            <div class="calendar-header-cell">Lun</div>
-            <div class="calendar-header-cell">Mar</div>
-            <div class="calendar-header-cell">Mer</div>
-            <div class="calendar-header-cell">Gio</div>
-            <div class="calendar-header-cell">Ven</div>
-            <div class="calendar-header-cell">Sab</div>
-            <div class="calendar-header-cell">Dom</div>
+        <div id="nbjc-calendar-wrapper">
+            <div class="nbjc-header">Lun</div><div class="nbjc-header">Mar</div>
+            <div class="nbjc-header">Mer</div><div class="nbjc-header">Gio</div>
+            <div class="nbjc-header">Ven</div><div class="nbjc-header">Sab</div>
+            <div class="nbjc-header">Dom</div>
 
             {% for week in month_days %}
                 {% for day in week %}
-                    <div class="calendar-day-cell {% if day == 0 %}day-off{% endif %}">
+                    <div class="{% if day == 0 %}nbjc-day-off{% endif %}">
                         {% if day != 0 %}
-                            <div class="day-number">{{ day }}</div>
+                            <div class="text-end fw-bold small text-muted mb-1">{{ day }}</div>
                             {% with entries=calendar_data|get_item:day %}
                                 {% for entry in entries %}
                                     <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
-                                       class="calendar-entry entry-{{ entry.kind|default:'info' }}"
-                                       data-hover="<b>{{ entry.created_by.username }} ({{ entry.created|date:'H:i' }})</b><br>{{ entry.comments }}">
-                                        <b>{{ entry.created|date:"H:i" }}</b> {{ entry.comments|truncatechars:15 }}
+                                       class="nbjc-entry kind-{{ entry.kind|default:'info' }}"
+                                       data-hover="<b>{{ entry.created_by.username }}</b><br>{{ entry.comments }}">
+                                        {{ entry.created|date:"H:i" }} {{ entry.comments|truncatechars:10 }}
                                     </a>
                                 {% endfor %}
                             {% endwith %}
@@ -146,17 +133,18 @@
     </div>
 </div>
 
-<div id="calendar-tooltip"></div>
+<div id="nbjc-tooltip"></div>
 {% endblock %}
 
 {% block javascript %}
 <script>
     (function() {
-        const tooltip = document.getElementById('calendar-tooltip');
+        const tooltip = document.getElementById('nbjc-tooltip');
+        // Fondamentale: lo mettiamo nel body per evitare che NetBox lo "tagli"
         document.body.appendChild(tooltip);
 
         document.addEventListener('mouseover', function(e) {
-            const el = e.target.closest('.calendar-entry');
+            const el = e.target.closest('.nbjc-entry');
             if (el) {
                 tooltip.innerHTML = el.getAttribute('data-hover');
                 tooltip.style.display = 'block';
@@ -167,15 +155,15 @@
             if (tooltip.style.display === 'block') {
                 let x = e.clientX + 15;
                 let y = e.clientY + 15;
-                if (x + 280 > window.innerWidth) x = e.clientX - 290;
-                if (y + 120 > window.innerHeight) y = e.clientY - 130;
+                if (x + 250 > window.innerWidth) x = e.clientX - 260;
+                if (y + 100 > window.innerHeight) y = e.clientY - 110;
                 tooltip.style.left = x + 'px';
                 tooltip.style.top = y + 'px';
             }
         });
 
         document.addEventListener('mouseout', function(e) {
-            if (e.target.closest('.calendar-entry')) {
+            if (e.target.closest('.nbjc-entry')) {
                 tooltip.style.display = 'none';
             }
         });
