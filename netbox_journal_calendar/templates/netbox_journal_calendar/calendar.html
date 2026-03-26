@@ -11,8 +11,10 @@
     .bg-success-subtle { background-color: #d1e7dd !important; border-color: #198754 !important; }
     
     /* Stile Popover */
-    .popover { 
-        z-index: 2050 !important; 
+	.popover {
+    position: fixed !important;
+    z-index: 9999 !important;
+    display: block !important; /* Forza il display se l'opacità fallisce */
         opacity: 1 !important; 
         box-shadow: 0 0.5rem 1rem rgba(0,0,0,.2) !important;
         border: 1px solid #dee2e6 !important;
@@ -101,36 +103,41 @@
 {% endblock %}
 
 {% block javascript %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        function initPopovers() {
-            // NetBox 4.x espone bootstrap globalmente, ma verifichiamo entrambi i casi
-            const bs = window.bootstrap || (typeof bootstrap !== 'undefined' ? bootstrap : null);
+<script type="text/javascript">
+    (function() {
+        const init = () => {
+            // Cerchiamo l'istanza di bootstrap sia in window che come variabile locale
+            const bs = window.bootstrap;
 
-            if (bs && bs.Popover) {
-                const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-                
-                popoverTriggerList.forEach(function (popoverTriggerEl) {
-                    // Inizializzazione pulita
-                    new bs.Popover(popoverTriggerEl, {
+            if (typeof bs !== 'undefined' && bs.Popover) {
+                const elements = document.querySelectorAll('[data-bs-toggle="popover"]');
+                console.log(`[Journal Calendar] Trovati ${elements.length} elementi.`);
+
+                elements.forEach(el => {
+                    // Importante: distruggiamo eventuali istanze residue prima di ricrearle
+                    const oldPopover = bs.Popover.getInstance(el);
+                    if (oldPopover) oldPopover.dispose();
+
+                    new bs.Popover(el, {
                         html: true,
-                        sanitize: false, // Necessario per mostrare i badge colorati e i <br>
+                        sanitize: false,
                         container: 'body',
-                        trigger: 'hover',
-                        boundary: 'viewport',
-                        // Se il contenuto è molto lungo, questo aiuta il posizionamento
-                        fallbackPlacements: ['bottom', 'right']
+                        trigger: 'hover focus', // Aggiunto focus per accessibilità
+                        boundary: 'viewport'
                     });
                 });
-                console.log("Journal Calendar: " + popoverTriggerList.length + " popovers caricati.");
             } else {
-                // Riprova se Bootstrap non è ancora caricato (NetBox carica JS in differita)
-                setTimeout(initPopovers, 200);
+                // Se bootstrap non c'è, aspettiamo un po' (NetBox lo carica in modo asincrono)
+                setTimeout(init, 500);
             }
-        }
+        };
 
-        // Avvia l'inizializzazione
-        initPopovers();
-    });
+        // Eseguiamo l'inizializzazione al caricamento e dopo ogni eventuale aggiornamento DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
 </script>
 {% endblock %}
