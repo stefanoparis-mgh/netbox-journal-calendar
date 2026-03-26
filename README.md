@@ -8,8 +8,8 @@
 
   [![GitHub release](https://img.shields.io/github/v/release/stefanoparis-mgh/netbox-journal-calendar?include_prereleases&style=flat-square)](https://github.com/stefanoparis-mgh/netbox-journal-calendar/releases)
   [![License](https://img.shields.io/github/license/stefanoparis-mgh/netbox-journal-calendar?style=flat-square&color=blue)](LICENSE)
-  [![Python](https://img.shields.io/badge/Python-3.10%2B-flat_square?logo=python&logoColor=white&color=blue)](https://www.python.org/)
-  [![NetBox Compatibility](https://img.shields.io/badge/NetBox-4.0%2B-ff69b4?style=flat-square&logo=cisco&logoColor=white)](https://github.com/netbox-community/netbox)
+  [![Python](https://img.shields.io/badge/Python-3.13%2B-flat_square?logo=python&logoColor=white&color=blue)](https://www.python.org/)
+  [![NetBox Compatibility](https://img.shields.io/badge/NetBox-4.5%2B-ff69b4?style=flat-square&logo=cisco&logoColor=white)](https://github.com/netbox-community/netbox)
   
   ---
 
