@@ -3,151 +3,122 @@
 
 {% block extra_styles %}
 <style>
-    /* 1. LAYOUT SIDEBAR E CALENDARIO */
-    .nb-main-row { display: flex !important; flex-wrap: nowrap !important; gap: 20px; align-items: flex-start; }
-    .nb-sidebar { flex: 0 0 25%; min-width: 250px; }
-    .nb-calendar-col { flex: 1; min-width: 0; } /* min-width: 0 impedisce l'overflow del flex */
-
-    /* 2. GRIGLIA TABELLA FORZATA */
-    .nb-calendar-card { background: #fff; border: 1px solid #dee2e6; border-radius: 6px; overflow: hidden; }
-    .nb-table { 
-        table-layout: fixed !important; 
-        width: 100% !important; 
-        border-collapse: collapse !important; 
-        margin: 0 !important;
-    }
-    .nb-table th { 
-        width: 14.28% !important; 
-        background: #f8f9fa; 
-        padding: 10px; 
-        border: 1px solid #dee2e6; 
-        text-align: center; 
-        font-size: 0.9rem;
-    }
-    .nb-day { 
-        height: 125px !important; 
-        padding: 6px !important; 
-        border: 1px solid #dee2e6 !important; 
-        vertical-align: top !important;
-    }
-    .nb-off { background-color: #f1f3f5 !important; }
-
-    /* 3. VOCI DEL DIARIO (ENTRY) */
-    .nb-entry {
-        display: block !important;
-        font-size: 11px !important;
-        line-height: 1.3 !important;
-        padding: 4px 6px !important;
-        margin-bottom: 4px !important;
-        border-radius: 4px !important;
-        border-left: 4px solid #adb5bd !important;
-        color: #212529 !important;
+    /* Usiamo il sistema di colori nativo di NetBox per le entry */
+    .calendar-entry {
+        display: block;
+        margin-bottom: 2px;
+        padding: 2px 5px;
+        font-size: 11px;
+        border-radius: 3px;
+        border-left: 4px solid #888;
         text-decoration: none !important;
-        white-space: normal !important; /* Testo a capo */
-        word-wrap: break-word !important;
-        background: #fff;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        color: inherit !important;
+        /* Forza il testo su più righe se necessario */
+        white-space: normal;
+        word-break: break-word;
     }
-    .nb-entry:hover { filter: brightness(0.95); }
     
-    /* Colori */
-    .nb-info { border-left-color: #0dcaf0 !important; background-color: #cff4fc !important; }
-    .nb-success { border-left-color: #198754 !important; background-color: #d1e7dd !important; }
-    .nb-warning { border-left-color: #ffc107 !important; background-color: #fff3cd !important; }
-    .nb-danger { border-left-color: #dc3545 !important; background-color: #f8d7da !important; }
+    /* Mappatura colori standard */
+    .bg-info-subtle { background-color: #d1ecf1 !important; border-color: #0c5460 !important; }
+    .bg-success-subtle { background-color: #d4edda !important; border-color: #155724 !important; }
+    .bg-warning-subtle { background-color: #fff3cd !important; border-color: #856404 !important; }
+    .bg-danger-subtle { background-color: #f8d7da !important; border-color: #721c24 !important; }
 
-    /* 4. TOOLTIP (FIXED E ISOLATO) */
-    #nb-js-tooltip {
-        position: fixed !important;
+    /* Fix per la tabella: forziamo solo l'altezza delle celle */
+    .table-calendar td {
+        height: 120px;
+        vertical-align: top !important;
+        width: 14.28%;
+        padding: 5px !important;
+    }
+
+    /* TOOLTIP: Lo rendiamo ultra-semplice */
+    #journal-tooltip {
+        position: fixed;
         display: none;
-        z-index: 2000 !important; /* Molto alto per stare sopra la navbar */
-        background: #212529 !important;
-        color: #fff !important;
-        padding: 10px 14px !important;
-        border-radius: 5px !important;
-        font-size: 12px !important;
-        max-width: 280px !important;
-        pointer-events: none !important;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
-        line-height: 1.4;
+        background: #212529;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 9999;
+        max-width: 250px;
+        pointer-events: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="nb-main-row">
-    <div class="nb-sidebar">
-        <div class="card shadow-sm">
-            <h5 class="card-header bg-light">Filtri</h5>
-            <div class="card-body">
-                <form method="get">
-                    {{ filter_form.as_p }}
-                    <button type="submit" class="btn btn-primary w-100 mt-3 shadow-none">Applica</button>
-                    <a href="." class="btn btn-link w-100 mt-1 text-muted small">Reset filtri</a>
-                </form>
-            </div>
-        </div>
+<div class="row">
+    <div class="col col-md-3">
+        {% include 'inc/filter_form_card.html' %}
     </div>
 
-    <div class="nb-calendar-col">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0 fw-bold">{{ month_name }} {{ year }}</h2>
-            <div class="btn-group shadow-sm">
-                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-secondary btn-sm px-3">&larr;</a>
-                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-secondary btn-sm px-3">&rarr;</a>
+    <div class="col col-md-9">
+        <div class="card">
+            <div class="card-header justify-content-between">
+                <h5 class="mb-0">{{ month_name }} {{ year }}</h5>
+                <div class="btn-group">
+                    <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-sm btn-outline-secondary">&lt;</a>
+                    <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-sm btn-outline-secondary">&gt;</a>
+                </div>
             </div>
-        </div>
-
-        <div class="nb-calendar-card shadow-sm">
-            <table class="nb-table">
-                <thead>
-                    <tr>
-                        <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for week in month_days %}
-                    <tr>
-                        {% for day in week %}
-                        <td class="nb-day {% if day == 0 %}nb-off{% endif %}">
-                            {% if day != 0 %}
-                                <div class="text-end fw-bold text-muted small mb-1">{{ day }}</div>
-                                {% with entries=calendar_data|get_item:day %}
-                                    {% for entry in entries %}
-                                        <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
-                                           class="nb-entry nb-{{ entry.kind|default:'info' }}"
-                                           data-hover-html="<strong>{{ entry.created_by.username }}</strong><br>{{ entry.comments }}">
-                                            <span class="fw-bold">{{ entry.created|date:"H:i" }}</span> {{ entry.comments|truncatechars:18 }}
-                                        </a>
-                                    {% endfor %}
-                                {% endwith %}
-                            {% endif %}
-                        </td>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered table-calendar m-0">
+                    <thead>
+                        <tr class="text-center">
+                            <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for week in month_days %}
+                        <tr>
+                            {% for day in week %}
+                            <td class="{% if day == 0 %}bg-light text-muted{% endif %}">
+                                {% if day != 0 %}
+                                    <div class="text-end small fw-bold mb-1">{{ day }}</div>
+                                    {% with entries=calendar_data|get_item:day %}
+                                        {% for entry in entries %}
+                                            <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
+                                               class="calendar-entry 
+                                               {% if entry.kind == 'info' %}bg-info-subtle
+                                               {% elif entry.kind == 'success' %}bg-success-subtle
+                                               {% elif entry.kind == 'warning' %}bg-warning-subtle
+                                               {% elif entry.kind == 'danger' %}bg-danger-subtle
+                                               {% else %}bg-light{% endif %}"
+                                               data-tip="<strong>{{ entry.created_by.username }}</strong><br>{{ entry.comments }}">
+                                                <b>{{ entry.created|date:"H:i" }}</b> {{ entry.comments|truncatechars:12 }}
+                                            </a>
+                                        {% endfor %}
+                                    {% endwith %}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
                         {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-<div id="nb-js-tooltip"></div>
+<div id="journal-tooltip"></div>
 {% endblock %}
 
 {% block javascript %}
 <script>
     (function() {
-        const tooltip = document.getElementById('nb-js-tooltip');
-        
-        // SPOSTA IL TOOLTIP NEL BODY (Fix per il posizionamento a piè di pagina)
-        // Questo "rompe" ogni vincolo dei contenitori padri di NetBox
+        const tooltip = document.getElementById('journal-tooltip');
+        // Lo spostiamo fuori da ogni div per evitare problemi di overflow
         document.body.appendChild(tooltip);
 
         document.addEventListener('mouseover', function(e) {
-            const entry = e.target.closest('.nb-entry');
-            if (entry) {
-                tooltip.innerHTML = entry.getAttribute('data-hover-html');
+            const target = e.target.closest('.calendar-entry');
+            if (target) {
+                tooltip.innerHTML = target.getAttribute('data-tip');
                 tooltip.style.display = 'block';
             }
         });
@@ -156,10 +127,10 @@
             if (tooltip.style.display === 'block') {
                 let x = e.clientX + 15;
                 let y = e.clientY + 15;
-
-                // Controllo collisione bordi viewport
-                if (x + 280 > window.innerWidth) x = e.clientX - 290;
-                if (y + 120 > window.innerHeight) y = e.clientY - 130;
+                
+                // Check bordi finestra
+                if (x + 250 > window.innerWidth) x = e.clientX - 260;
+                if (y + 100 > window.innerHeight) y = e.clientY - 110;
 
                 tooltip.style.left = x + 'px';
                 tooltip.style.top = y + 'px';
@@ -167,7 +138,7 @@
         });
 
         document.addEventListener('mouseout', function(e) {
-            if (e.target.closest('.nb-entry')) {
+            if (e.target.closest('.calendar-entry')) {
                 tooltip.style.display = 'none';
             }
         });
