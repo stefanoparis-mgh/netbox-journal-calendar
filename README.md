@@ -1,26 +1,51 @@
-# 📅 NetBox Journal Calendar Plugin
+<div align="center">
 
-Un plugin per **NetBox** che trasforma le tue Journal Entries in un calendario interattivo e filtrabile. Visualizza cronologicamente gli interventi, i guasti e le attività di manutenzione direttamente sulla griglia temporale.
+  <img src="https://raw.githubusercontent.com/netbox-community/netbox/develop/docs/netbox_logo.png" alt="NetBox Logo" width="120" height="120">
 
----
+  # NetBox Journal Calendar Plugin
 
-## ✨ Funzionalità
+  *A powerful visual calendar extension for NetBox Journal entries.*
 
-- **Visualizzazione Intuitiva**: Griglia mensile completa basata sul modulo `calendar` di Python.
-- **Color-Coding Automatico**:
-  - 🔵 **Info**: Note informative.
-  - 🟢 **Success**: Interventi risolti.
-  - 🟡 **Warning**: Avvisi o manutenzioni programmate.
-  - 🔴 **Danger**: Guasti critici o errori.
-- **Integrazione Nativa**: Utilizza i componenti UI di NetBox e Bootstrap per un look coerente.
-- **Filtri Potenti**: Supporta il filtraggio per `Site`, `Device`, `User` e perfino **Custom Fields** (es. ID Ticket).
+  [![GitHub release](https://img.shields.io/github/v/release/stefanoparis-mgh/netbox-journal-calendar?include_prereleases&style=flat-square)](https://github.com/stefanoparis-mgh/netbox-journal-calendar/releases)
+  [![License](https://img.shields.io/github/license/stefanoparis-mgh/netbox-journal-calendar?style=flat-square&color=blue)](LICENSE)
+  [![Python](https://img.shields.io/badge/Python-3.10%2B-flat_square?logo=python&logoColor=white&color=blue)](https://www.python.org/)
+  [![NetBox Compatibility](https://img.shields.io/badge/NetBox-4.0%2B-ff69b4?style=flat-square&logo=cisco&logoColor=white)](https://github.com/netbox-community/netbox)
+  
+  ---
 
----
+  [Features](#-key-features) •
+  [Installation](#-installation) •
+  [Configuration](#%EF%B8%8F-configuration) •
+  [Screenshots](#-screenshots) •
+  [Contributing](#-contributing)
 
-## 🛠 Installazione
+</div>
 
-### 1. Scarica e Installa il Pacchetto
-Puoi installarlo direttamente da GitHub tramite `pip`:
+<br>
+
+## 📖 Introduction
+
+**NetBox Journal Calendar** is a streamlined plugin designed to bring a comprehensive calendar view to the native NetBox journaling system. Instead of scrolling through text-heavy logs, this plugin transforms your existing Journal entries into an interactive, color-coded calendar interface.
+
+It provides immediate visual context for network changes, maintanance windows, device installations, and other critical events registered within your infrastructure database.
+
+## 🚀 Key Features
+
+* 📅 **Full Calendar Integration:** View Journal entries in a standard Month, Week, or Day layout.
+* 📊 **Visual Categorization:** Events are automatically color-coded based on the Journal Entry type (*Success, Info, Warning, Danger*).
+* 🔍 **Quick Peek View:** Click an event to instantly see the full note and a link to the associated NetBox object.
+* 🛠️ **Native Experience:** Built to feel like a core part of the NetBox UI.
+* 🧩 **Model Agnostic:** Works flawlessly with Journal entries from Devices, VMs, Circuits, IP Addresses, and all other supported models.
+
+## 🛠️ Installation
+
+This plugin can be installed using git.
+
+### Step 1: Install the Package
+
+Activate your NetBox virtual environment and install the plugin.
 
 ```bash
+source /opt/netbox/venv/bin/activate
 pip install git+https://github.com/stefanoparis-mgh/netbox-journal-calendar
+systemctl restart netbox netbox-rq
