@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='netbox-journal-calendar',
-    version='2.0.1',
+    version='2.0.2',
     description='Calendario interattivo per Journal Entries con filtri avanzati',
     long_description='Visualizza la cronologia degli interventi su una griglia temporale mensile filtrabile per Sito, Device e Tags.',
     url='https://github.com/stefanoparis-mgh/netbox-journal-calendar',
