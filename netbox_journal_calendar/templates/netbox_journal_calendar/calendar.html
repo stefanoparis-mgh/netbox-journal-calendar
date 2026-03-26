@@ -1,78 +1,158 @@
 {% extends 'base/layout.html' %}
-{% load calendar_extras %}
 
 {% block content %}
 <div class="row">
-    <div class="col-md-3">
-        <div class="card">
-            <h5 class="card-header">Filtri</h5>
+    <div class="col col-md-3">
+        <div class="card shadow-sm border-0">
+            <h5 class="card-header bg-primary text-white">Filtri Avanzati</h5>
             <div class="card-body">
-                <form method="get">{{ filter_form.as_p }}
-                    <button type="submit" class="btn btn-primary w-100 mt-2">Applica</button>
+                <form method="get" action=".">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Tipo Nota</label>
+                        <select name="kind" class="form-select form-select-sm">
+                            <option value="">Tutti</option>
+                            {% for choice in kind_choices %}
+                                <option value="{{ choice.0 }}" {% if current_kind == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Utente</label>
+                        <select name="user" class="form-select form-select-sm">
+                            <option value="">Tutti</option>
+                            {% for u in users %}
+                                <option value="{{ u.id }}" {% if current_user == u.id|slugify %}selected{% endif %}>{{ u.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Device</label>
+                        <select name="device" class="form-select form-select-sm">
+                            <option value="">Tutti</option>
+                            {% for d in devices %}
+                                <option value="{{ d.id }}" {% if current_device == d.id|slugify %}selected{% endif %}>{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Virtual Machine</label>
+                        <select name="vm" class="form-select form-select-sm">
+                            <option value="">Tutti</option>
+                            {% for v in vms %}
+                                <option value="{{ v.id }}" {% if current_vm == v.id|slugify %}selected{% endif %}>{{ v.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Service</label>
+                        <select name="service" class="form-select form-select-sm">
+                            <option value="">Tutti</option>
+                            {% for s in services %}
+                                <option value="{{ s.id }}" {% if current_service == s.id|slugify %}selected{% endif %}>{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary btn-sm">Applica</button>
+                        <a href="?" class="btn btn-outline-secondary btn-sm">Reset</a>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="col-md-9">
-        <div class="d-flex justify-content-between mb-3">
-            <h2>{{ month_name }} {{ year }}</h2>
-            <div class="btn-group">
-                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-sm btn-outline-secondary">←</a>
-                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-sm btn-outline-secondary">→</a>
+    <div class="col col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0 fw-bold">{{ month_name }} {{ year }}</h2>
+            <div class="btn-group shadow-sm">
+                <a href="{{ prev_url }}" class="btn btn-sm btn-outline-dark px-3">&larr;</a>
+                <a href="{{ next_url }}" class="btn btn-sm btn-outline-dark px-3">&rarr;</a>
             </div>
         </div>
 
-        <div style="display: grid !important; grid-template-columns: repeat(7, 1fr) !important; background: #dee2e6; gap: 1px; border: 1px solid #dee2e6; width: 100%; box-sizing: border-box;">
-            
-            {% for h in "Lun,Mar,Mer,Gio,Ven,Sab,Dom"|split:"," %}
-            <div style="background: #f8f9fa; padding: 10px; text-align: center; font-weight: bold; font-size: 0.8rem;">{{ h }}</div>
-            {% endfor %}
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); background: #dee2e6; gap: 1px; border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">LUN</div>
+            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">MAR</div>
+            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">MER</div>
+            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">GIO</div>
+            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">VEN</div>
+            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">SAB</div>
+            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">DOM</div>
 
-            {% for week in month_days %}
-                {% for day in week %}
-                <div style="background: {% if day == 0 %}#f1f3f5{% else %}#ffffff{% endif %}; height: 140px; min-height: 140px; padding: 5px; overflow-y: auto; display: block !important;">
-                    {% if day != 0 %}
-                        <div style="text-align: right; font-weight: bold; font-size: 0.75rem; color: #6c757d; margin-bottom: 5px; display: block;">{{ day }}</div>
+            {% for day in days %}
+                <div style="background-color: {% if day.num == 0 %}#f1f3f5{% else %}#ffffff{% endif %}; height: 140px; min-height: 140px; padding: 5px; overflow-y: auto;">
+                    {% if day.num > 0 %}
+                        <div style="text-align: right; font-weight: 800; font-size: 0.85rem; color: {% if day.num == today %}#0d6efd{% else %}#adb5bd{% endif %}; margin-bottom: 5px;">
+                            {% if day.num == today %}<span style="font-size: 0.6rem; vertical-align: middle; margin-right: 4px;">●</span>{% endif %}{{ day.num }}
+                        </div>
                         
                         <div style="display: block !important;">
-                            {% with entries=calendar_data|get_item:day %}
-                                {% for entry in entries %}
+                            {% for entry in day.list %}
                                 <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
-                                   style="display: block !important; margin-bottom: 3px; padding: 2px 5px; font-size: 11px; border-left: 4px solid {% if entry.kind == 'success' %}#198754{% elif entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% else %}#0dcaf0{% endif %}; background: #f8f9fa; color: #333; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                   onmouseover="showTip(event, '<b>{{ entry.created_by.username }}</b><br>{{ entry.comments|escapejs }}')"
-                                   onmouseout="hideTip()">
-                                    <b>{{ entry.created|date:'H:i' }}</b> {{ entry.comments|truncatechars:10 }}
-                                </a>
-                                {% endfor %}
-                            {% endwith %}
+   target="_blank"
+   style="display: block; margin-bottom: 3px; padding: 3px 5px; font-size: 10px; border-radius: 3px; border-left: 3px solid {% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %}; background-color: #f8f9fa; color: #333; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+   onmouseover="showJournalTip(event, '{{ entry.created_by.username|escapejs }}', '{{ entry.created|date:'H:i' }}', '{{ entry.assigned_object|escapejs }}', '{{ entry.comments|escapejs }}')"
+   onmouseout="hideJournalTip()">
+    
+    <i class="mdi {% if entry.assigned_object_type.model == 'device' %}mdi-server{% elif entry.assigned_object_type.model == 'virtualmachine' %}mdi-cube-outline{% elif entry.assigned_object_type.model == 'service' %}mdi-cloud{% else %}mdi-note-text-outline{% endif %}"></i>
+    
+    <span style="font-weight: 700; margin-left: 2px;">{{ entry.created|date:"H:i" }}</span> 
+    {{ entry.comments|truncatechars:12 }}
+</a>
+                            {% endfor %}
                         </div>
                     {% endif %}
                 </div>
-                {% endfor %}
             {% endfor %}
         </div>
     </div>
 </div>
 
-<div id="nbjc-tip" style="position: fixed; display: none; background: #212529; color: #fff; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 99999; max-width: 250px; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"></div>
+<div id="nbjc-tooltip" style="position: fixed; display: none; background: #212529; color: #fff; padding: 12px; border-radius: 6px; font-size: 12px; z-index: 99999; max-width: 320px; pointer-events: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #444; line-height: 1.4;"></div>
+{% endblock %}
 
+{% block javascript %}
 <script>
-    const tip = document.getElementById('nbjc-tip');
-    function showTip(e, text) {
-        tip.innerHTML = text;
-        tip.style.display = 'block';
-        moveTip(e);
-    }
-    function moveTip(e) {
+    // Definiamo le funzioni direttamente sull'oggetto window per renderle globali
+    window.showJournalTip = function(e, user, time, obj, comments) {
+        const tooltip = document.getElementById('nbjc-tooltip');
+        if (!tooltip) return;
+
+        tooltip.innerHTML = `
+            <div style="border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 5px; display: flex; justify-content: space-between;">
+                <b style="color: #0dcaf0;">${user}</b> 
+                <span style="color: #adb5bd; margin-left: 10px;">${time}</span>
+            </div>
+            <div style="font-size: 11px; margin-bottom: 8px; color: #ffc107; font-weight: bold;">Ogg: ${obj}</div>
+            <div style="white-space: pre-wrap; word-break: break-word;">${comments}</div>
+        `;
+        tooltip.style.display = 'block';
+        
+        // Posizionamento iniziale
+        updateTipPos(e);
+    };
+
+    window.hideJournalTip = function() {
+        const tooltip = document.getElementById('nbjc-tooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    };
+
+    function updateTipPos(e) {
+        const tooltip = document.getElementById('nbjc-tooltip');
+        if (!tooltip || tooltip.style.display !== 'block') return;
+
         let x = e.clientX + 15;
         let y = e.clientY + 15;
-        if (x + 250 > window.innerWidth) x = e.clientX - 260;
-        if (y + 100 > window.innerHeight) y = e.clientY - 110;
-        tip.style.left = x + 'px';
-        tip.style.top = y + 'px';
+
+        if (x + 320 > window.innerWidth) x = e.clientX - 335;
+        if (y + 150 > window.innerHeight) y = e.clientY - 160;
+
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
     }
-    function hideTip() { tip.style.display = 'none'; }
-    document.addEventListener('mousemove', (e) => { if(tip.style.display === 'block') moveTip(e); });
+
+    // Aggiorna la posizione durante il movimento del mouse
+    document.addEventListener('mousemove', updateTipPos);
 </script>
 {% endblock %}
