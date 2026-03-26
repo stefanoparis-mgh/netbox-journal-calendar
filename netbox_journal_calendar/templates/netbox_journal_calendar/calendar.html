@@ -1,34 +1,163 @@
+{% extends 'base/layout.html' %}
+{% load calendar_extras %}
+
+{% block extra_styles %}
+<style>
+    /* 1. FIX LAYOUT: Proteggiamo la struttura della tabella */
+    .calendar-wrapper {
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .calendar-table {
+        table-layout: fixed;
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0 !important;
+    }
+    .calendar-table th {
+        background-color: #f8f9fa;
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+        width: 14.28%; /* Forza 7 colonne uguali */
+    }
+    .calendar-day {
+        height: 120px;
+        vertical-align: top;
+        padding: 8px;
+        border: 1px solid #dee2e6;
+        position: relative;
+    }
+    .day-off { background-color: #f1f3f5; }
+    .day-number { font-weight: bold; color: #6c757d; font-size: 0.9rem; margin-bottom: 5px; text-align: right; }
+
+    /* 2. STYLE ENTRIES: Rendiamole leggibili */
+    .journal-entry {
+        display: block;
+        padding: 2px 6px;
+        margin-bottom: 3px;
+        font-size: 11px;
+        border-radius: 3px;
+        text-decoration: none !important;
+        color: #333 !important;
+        border-left: 3px solid #adb5bd;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .entry-info { border-left-color: #0dcaf0; background-color: #e0f7fa; }
+    .entry-success { border-left-color: #198754; background-color: #e8f5e9; }
+    .entry-warning { border-left-color: #ffc107; background-color: #fffde7; }
+    .entry-danger { border-left-color: #dc3545; background-color: #ffebee; }
+
+    /* 3. TOOLTIP CUSTOM: Indipendente da Bootstrap */
+    #custom-tooltip {
+        position: fixed;
+        display: none;
+        padding: 8px 12px;
+        background: rgba(33, 37, 41, 0.95);
+        color: white;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 10000;
+        max-width: 280px;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col col-md-3">
+        <div class="card">
+            <h5 class="card-header">Filtri</h5>
+            <div class="card-body">
+                <form method="get">
+                    {{ filter_form.as_p }}
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary w-100">Applica</button>
+                        <a href="." class="btn btn-outline-secondary w-100 mt-2">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-sm btn-outline-dark">&lt;</a>
+            <h3 class="mb-0">{{ month_name }} {{ year }}</h3>
+            <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-sm btn-outline-dark">&gt;</a>
+        </div>
+
+        <div class="calendar-wrapper shadow-sm border">
+            <table class="calendar-table">
+                <thead>
+                    <tr>
+                        <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in month_days %}
+                    <tr>
+                        {% for day in week %}
+                        <td class="calendar-day {% if day == 0 %}day-off{% endif %}">
+                            {% if day != 0 %}
+                                <div class="day-number">{{ day }}</div>
+                                {% with entries=calendar_data|get_item:day %}
+                                    {% for entry in entries %}
+                                        <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
+                                           class="journal-entry entry-{{ entry.kind|default:'info' }}"
+                                           data-tip="<strong>{{ entry.created_by.username }}</strong><br>{{ entry.comments|truncatechars:100 }}">
+                                            <b>{{ entry.created|date:"H:i" }}</b> {{ entry.comments|truncatechars:12 }}
+                                        </a>
+                                    {% endfor %}
+                                {% endwith %}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="custom-tooltip"></div>
+{% endblock %}
+
 {% block javascript %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const tooltip = document.getElementById('tooltip-container');
-        const entries = document.querySelectorAll('.journal-entry');
-
-        entries.forEach(entry => {
-            entry.addEventListener('mouseenter', function(e) {
-                const content = this.getAttribute('data-tooltip');
-                if (!content) return;
-
-                tooltip.innerHTML = content;
-                tooltip.classList.add('visible');
+        const tooltip = document.getElementById('custom-tooltip');
+        
+        document.querySelectorAll('.journal-entry').forEach(el => {
+            el.addEventListener('mouseenter', e => {
+                tooltip.innerHTML = el.getAttribute('data-tip');
+                tooltip.style.display = 'block';
             });
 
-            entry.addEventListener('mousemove', function(e) {
-                // Posiziona il tooltip vicino al cursore
-                const padding = 15;
-                let x = e.clientX + padding;
-                let y = e.clientY + padding;
-
-                // Controllo bordi schermo (per non far uscire il tooltip a destra o in basso)
-                if (x + 250 > window.innerWidth) x = e.clientX - 260;
-                if (y + 150 > window.innerHeight) y = e.clientY - 160;
+            el.addEventListener('mousemove', e => {
+                // Calcolo posizione
+                let x = e.clientX + 15;
+                let y = e.clientY + 15;
+                
+                // Evita di uscire a destra
+                if (x + 280 > window.innerWidth) x = e.clientX - 290;
+                // Evita di uscire in basso
+                if (y + 100 > window.innerHeight) y = e.clientY - 110;
 
                 tooltip.style.left = x + 'px';
                 tooltip.style.top = y + 'px';
             });
 
-            entry.addEventListener('mouseleave', function() {
-                tooltip.classList.remove('visible');
+            el.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
             });
         });
     });
