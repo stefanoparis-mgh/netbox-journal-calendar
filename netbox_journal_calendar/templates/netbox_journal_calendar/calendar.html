@@ -1,95 +1,13 @@
 {% extends 'base/layout.html' %}
 {% load calendar_extras %}
 
-{% block extra_styles %}
-<style>
-    /* Usiamo un ID per avere la massima specificità CSS possibile */
-    #nbjc-calendar-wrapper {
-        display: grid !important;
-        /* Forziamo 7 colonne: se il contenitore è 1000px, ogni colonna SARÀ ~142px */
-        grid-template-columns: repeat(7, 1fr) !important;
-        grid-auto-flow: row !important;
-        gap: 1px !important;
-        background-color: #dee2e6 !important; /* Colore dei bordi */
-        border: 1px solid #dee2e6 !important;
-        width: 100% !important;
-        clear: both !important;
-    }
-
-    /* Forza ogni figlio del wrapper a stare nella griglia e non espandersi */
-    #nbjc-calendar-wrapper > div {
-        display: flex !important;
-        flex-direction: column !important;
-        background-color: #ffffff !important;
-        height: 140px !important;
-        min-height: 140px !important;
-        max-height: 140px !important;
-        margin: 0 !important;
-        padding: 5px !important;
-        overflow-y: auto !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Header giorni (Lun, Mar...) */
-    .nbjc-header {
-        height: auto !important;
-        min-height: unset !important;
-        background-color: #f8f9fa !important;
-        font-weight: bold !important;
-        text-align: center !important;
-        text-transform: uppercase !important;
-        font-size: 0.75rem !important;
-    }
-
-    .nbjc-day-off { background-color: #f1f3f5 !important; }
-
-    /* Entry stile "pillola" */
-    .nbjc-entry {
-        display: block !important;
-        font-size: 10px !important;
-        margin-bottom: 2px !important;
-        padding: 2px 4px !important;
-        border-radius: 3px !important;
-        border-left: 3px solid #888 !important;
-        text-decoration: none !important;
-        color: #333 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        line-height: 1.2 !important;
-    }
-
-    /* Colori forzati con ID per precedenza */
-    #nbjc-calendar-wrapper .kind-info { border-left-color: #0dcaf0 !important; background-color: #cff4fc !important; }
-    #nbjc-calendar-wrapper .kind-success { border-left-color: #198754 !important; background-color: #d1e7dd !important; }
-    #nbjc-calendar-wrapper .kind-warning { border-left-color: #ffc107 !important; background-color: #fff3cd !important; }
-    #nbjc-calendar-wrapper .kind-danger { border-left-color: #dc3545 !important; background-color: #f8d7da !important; }
-
-    /* TOOLTIP: Spostato fuori con JS, quindi position fixed sicura */
-    #nbjc-tooltip {
-        position: fixed !important;
-        display: none;
-        z-index: 99999;
-        background: #212529;
-        color: #fff;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 12px;
-        max-width: 250px;
-        pointer-events: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="row">
     <div class="col-md-3">
-        <div class="card shadow-sm">
-            <h5 class="card-header bg-light">Filtri</h5>
+        <div class="card">
+            <h5 class="card-header">Filtri</h5>
             <div class="card-body">
-                <form method="get">
-                    {{ filter_form.as_p }}
+                <form method="get">{{ filter_form.as_p }}
                     <button type="submit" class="btn btn-primary w-100 mt-2">Applica</button>
                 </form>
             </div>
@@ -97,76 +15,64 @@
     </div>
 
     <div class="col-md-9">
-        <div class="d-flex justify-content-between align-items-baseline mb-3">
-            <h2 class="fw-bold">{{ month_name }} {{ year }}</h2>
+        <div class="d-flex justify-content-between mb-3">
+            <h2>{{ month_name }} {{ year }}</h2>
             <div class="btn-group">
-                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-secondary btn-sm">←</a>
-                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-secondary btn-sm">→</a>
+                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-sm btn-outline-secondary">←</a>
+                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-sm btn-outline-secondary">→</a>
             </div>
         </div>
 
-        <div id="nbjc-calendar-wrapper">
-            <div class="nbjc-header">Lun</div><div class="nbjc-header">Mar</div>
-            <div class="nbjc-header">Mer</div><div class="nbjc-header">Gio</div>
-            <div class="nbjc-header">Ven</div><div class="nbjc-header">Sab</div>
-            <div class="nbjc-header">Dom</div>
+        <div style="display: grid !important; grid-template-columns: repeat(7, 1fr) !important; background: #dee2e6; gap: 1px; border: 1px solid #dee2e6; width: 100%; box-sizing: border-box;">
+            
+            {% for h in "Lun,Mar,Mer,Gio,Ven,Sab,Dom"|split:"," %}
+            <div style="background: #f8f9fa; padding: 10px; text-align: center; font-weight: bold; font-size: 0.8rem;">{{ h }}</div>
+            {% endfor %}
 
             {% for week in month_days %}
                 {% for day in week %}
-                    <div class="{% if day == 0 %}nbjc-day-off{% endif %}">
-                        {% if day != 0 %}
-                            <div class="text-end fw-bold small text-muted mb-1">{{ day }}</div>
+                <div style="background: {% if day == 0 %}#f1f3f5{% else %}#ffffff{% endif %}; height: 140px; min-height: 140px; padding: 5px; overflow-y: auto; display: block !important;">
+                    {% if day != 0 %}
+                        <div style="text-align: right; font-weight: bold; font-size: 0.75rem; color: #6c757d; margin-bottom: 5px; display: block;">{{ day }}</div>
+                        
+                        <div style="display: block !important;">
                             {% with entries=calendar_data|get_item:day %}
                                 {% for entry in entries %}
-                                    <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
-                                       class="nbjc-entry kind-{{ entry.kind|default:'info' }}"
-                                       data-hover="<b>{{ entry.created_by.username }}</b><br>{{ entry.comments }}">
-                                        {{ entry.created|date:"H:i" }} {{ entry.comments|truncatechars:10 }}
-                                    </a>
+                                <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
+                                   style="display: block !important; margin-bottom: 3px; padding: 2px 5px; font-size: 11px; border-left: 4px solid {% if entry.kind == 'success' %}#198754{% elif entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% else %}#0dcaf0{% endif %}; background: #f8f9fa; color: #333; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                   onmouseover="showTip(event, '<b>{{ entry.created_by.username }}</b><br>{{ entry.comments|escapejs }}')"
+                                   onmouseout="hideTip()">
+                                    <b>{{ entry.created|date:'H:i' }}</b> {{ entry.comments|truncatechars:10 }}
+                                </a>
                                 {% endfor %}
                             {% endwith %}
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
+                </div>
                 {% endfor %}
             {% endfor %}
         </div>
     </div>
 </div>
 
-<div id="nbjc-tooltip"></div>
-{% endblock %}
+<div id="nbjc-tip" style="position: fixed; display: none; background: #212529; color: #fff; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 99999; max-width: 250px; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"></div>
 
-{% block javascript %}
 <script>
-    (function() {
-        const tooltip = document.getElementById('nbjc-tooltip');
-        // Fondamentale: lo mettiamo nel body per evitare che NetBox lo "tagli"
-        document.body.appendChild(tooltip);
-
-        document.addEventListener('mouseover', function(e) {
-            const el = e.target.closest('.nbjc-entry');
-            if (el) {
-                tooltip.innerHTML = el.getAttribute('data-hover');
-                tooltip.style.display = 'block';
-            }
-        });
-
-        document.addEventListener('mousemove', function(e) {
-            if (tooltip.style.display === 'block') {
-                let x = e.clientX + 15;
-                let y = e.clientY + 15;
-                if (x + 250 > window.innerWidth) x = e.clientX - 260;
-                if (y + 100 > window.innerHeight) y = e.clientY - 110;
-                tooltip.style.left = x + 'px';
-                tooltip.style.top = y + 'px';
-            }
-        });
-
-        document.addEventListener('mouseout', function(e) {
-            if (e.target.closest('.nbjc-entry')) {
-                tooltip.style.display = 'none';
-            }
-        });
-    })();
+    const tip = document.getElementById('nbjc-tip');
+    function showTip(e, text) {
+        tip.innerHTML = text;
+        tip.style.display = 'block';
+        moveTip(e);
+    }
+    function moveTip(e) {
+        let x = e.clientX + 15;
+        let y = e.clientY + 15;
+        if (x + 250 > window.innerWidth) x = e.clientX - 260;
+        if (y + 100 > window.innerHeight) y = e.clientY - 110;
+        tip.style.left = x + 'px';
+        tip.style.top = y + 'px';
+    }
+    function hideTip() { tip.style.display = 'none'; }
+    document.addEventListener('mousemove', (e) => { if(tip.style.display === 'block') moveTip(e); });
 </script>
 {% endblock %}
