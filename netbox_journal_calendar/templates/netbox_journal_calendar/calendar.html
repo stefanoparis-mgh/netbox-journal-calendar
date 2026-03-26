@@ -145,4 +145,23 @@
 
         document.addEventListener('mousemove', function(e) {
             if (tip.style.display === 'block') {
-                let x = e.clientX +
+                let x = e.clientX + 20;
+                let y = e.clientY + 20;
+
+                // Controllo collisione bordi
+                if (x + 280 > window.innerWidth) x = e.clientX - 290;
+                if (y + 150 > window.innerHeight) y = e.clientY - 160;
+
+                tip.style.left = x + 'px';
+                tip.style.top = y + 'px';
+            }
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            if (e.target.closest('.nbjc-entry')) {
+                tip.style.display = 'none';
+            }
+        });
+    })();
+</script>
+{% endblock %}
