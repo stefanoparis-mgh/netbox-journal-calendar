@@ -12,7 +12,7 @@
     
     /* Stile Popover */
     .popover { 
-        z-index: 9999 !important; 
+        z-index: 2050 !important; 
         opacity: 1 !important; 
         box-shadow: 0 0.5rem 1rem rgba(0,0,0,.2) !important;
         border: 1px solid #dee2e6 !important;
@@ -102,40 +102,35 @@
 
 {% block javascript %}
 <script>
-    (function() {
-        // Funzione per inizializzare i popover
+    document.addEventListener('DOMContentLoaded', function() {
         function initPopovers() {
-            // In NetBox 4.x, bootstrap viene esposto globalmente dal file netbox.js
-            const bs = window.bootstrap;
+            // NetBox 4.x espone bootstrap globalmente, ma verifichiamo entrambi i casi
+            const bs = window.bootstrap || (typeof bootstrap !== 'undefined' ? bootstrap : null);
 
             if (bs && bs.Popover) {
-                const triggers = document.querySelectorAll('[data-bs-toggle="popover"]');
-                console.log(`Journal Calendar: Inizializzazione di ${triggers.length} elementi.`);
+                const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
                 
-                triggers.forEach(el => {
-                    // Rimuoviamo il title nativo per evitare conflitti col browser
-                    el.removeAttribute('title');
-                    
-                    new bs.Popover(el, {
+                popoverTriggerList.forEach(function (popoverTriggerEl) {
+                    // Inizializzazione pulita
+                    new bs.Popover(popoverTriggerEl, {
                         html: true,
-                        sanitize: false,
+                        sanitize: false, // Necessario per mostrare i badge colorati e i <br>
                         container: 'body',
                         trigger: 'hover',
-                        placement: 'top'
+                        boundary: 'viewport',
+                        // Se il contenuto è molto lungo, questo aiuta il posizionamento
+                        fallbackPlacements: ['bottom', 'right']
                     });
                 });
+                console.log("Journal Calendar: " + popoverTriggerList.length + " popovers caricati.");
             } else {
-                // Se bootstrap non è ancora pronto, riprova tra 100ms
-                setTimeout(initPopovers, 100);
+                // Riprova se Bootstrap non è ancora caricato (NetBox carica JS in differita)
+                setTimeout(initPopovers, 200);
             }
         }
 
-        // Aspettiamo che la pagina sia completamente carica (inclusi gli script statici)
-        if (document.readyState === 'complete') {
-            initPopovers();
-        } else {
-            window.addEventListener('load', initPopovers);
-        }
-    })();
+        // Avvia l'inizializzazione
+        initPopovers();
+    });
 </script>
 {% endblock %}
