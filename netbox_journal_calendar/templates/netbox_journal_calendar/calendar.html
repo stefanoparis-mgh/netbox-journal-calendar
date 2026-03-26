@@ -3,163 +3,156 @@
 
 {% block extra_styles %}
 <style>
-    /* 1. FORZATURA GRIGLIA: Nomi classi univoci per evitare conflitti */
-    .nbjc-container { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
-    .nbjc-sidebar { flex: 0 0 250px; }
-    .nbjc-main { flex: 1; min-width: 600px; }
-
-    .nbjc-table { 
-        table-layout: fixed !important; 
-        width: 100% !important; 
-        border-collapse: collapse !important; 
-        background: white;
+    /* 1. FORZATURA TABELLA: Impedisce il collasso delle celle */
+    .calendar-container {
+        overflow-x: auto;
+        background-color: white;
     }
-    .nbjc-table th { 
-        width: 14.28% !important; 
-        background: #f1f3f5; 
-        padding: 10px; 
-        border: 1px solid #dee2e6; 
-        text-align: center;
+    .nb-table-fixed {
+        table-layout: fixed !important;
+        width: 100% !important;
+        min-width: 800px; /* Evita che si schiacci troppo su schermi piccoli */
+        border-collapse: collapse !important;
     }
-    .nbjc-day { 
-        height: 130px !important; 
-        width: 14.28% !important; 
-        vertical-align: top !important; 
-        padding: 5px !important; 
+    .nb-table-fixed th, .nb-table-fixed td {
+        width: 14.28% !important;
         border: 1px solid #dee2e6 !important;
+        vertical-align: top !important;
+        padding: 8px !important;
     }
-    .nbjc-off { background-color: #f8f9fa !important; }
+    .nb-day-cell { height: 120px !important; }
+    .nb-day-off { background-color: #f8f9fa !important; }
 
-    /* 2. ENTRIES: Colori e Testo a capo */
-    .nbjc-entry {
+    /* 2. ENTRIES: Colori e a capo */
+    .nb-entry {
         display: block !important;
         font-size: 11px !important;
-        line-height: 1.2 !important;
-        padding: 3px 6px !important;
+        padding: 4px 6px !important;
         margin-bottom: 4px !important;
         border-radius: 4px !important;
         border-left: 4px solid #adb5bd !important;
         text-decoration: none !important;
         color: #212529 !important;
-        /* Gestione testo: ora va a capo se necessario */
-        white-space: normal !important; 
-        word-break: break-word !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+        white-space: normal !important; /* Forza il testo ad andare a capo */
+        word-wrap: break-word !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        line-height: 1.2;
     }
-    
-    /* Classi Colore Esplicite */
-    .nbjc-info { border-left-color: #0dcaf0 !important; background-color: #cff4fc !important; }
-    .nbjc-success { border-left-color: #198754 !important; background-color: #d1e7dd !important; }
-    .nbjc-warning { border-left-color: #ffc107 !important; background-color: #fff3cd !important; }
-    .nbjc-danger { border-left-color: #dc3545 !important; background-color: #f8d7da !important; }
+    /* Mappatura Colori */
+    .nb-entry-info { border-left-color: #0dcaf0 !important; background-color: #cff4fc !important; }
+    .nb-entry-success { border-left-color: #198754 !important; background-color: #d1e7dd !important; }
+    .nb-entry-warning { border-left-color: #ffc107 !important; background-color: #fff3cd !important; }
+    .nb-entry-danger { border-left-color: #dc3545 !important; background-color: #f8d7da !important; }
 
-    /* 3. TOOLTIP: Posizionamento FISSO assoluto */
-    #nbjc-tooltip {
-        position: fixed !important; /* Fondamentale per non finire a piè di pagina */
+    /* 3. TOOLTIP: Posizionamento assoluto sullo schermo */
+    #floating-tooltip {
+        position: fixed !important;
         display: none;
-        z-index: 999999 !important;
-        background: #212529 !important;
-        color: #ffffff !important;
-        padding: 10px !important;
-        border-radius: 5px !important;
-        font-size: 12px !important;
-        max-width: 280px !important;
-        pointer-events: none !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.4) !important;
+        z-index: 99999;
+        background: #212529;
+        color: #fff;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        max-width: 250px;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="nbjc-container">
-    <div class="nbjc-sidebar">
+<div class="row">
+    <div class="col col-md-3">
         <div class="card">
             <h5 class="card-header">Filtri</h5>
             <div class="card-body">
                 <form method="get">
                     {{ filter_form.as_p }}
                     <button type="submit" class="btn btn-primary w-100 mt-2">Applica</button>
+                    <a href="." class="btn btn-outline-secondary w-100 mt-1">Reset</a>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="nbjc-main">
+    <div class="col col-md-9">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">{{ month_name }} {{ year }}</h2>
             <div class="btn-group">
-                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-dark btn-sm">Precedente</a>
-                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-dark btn-sm">Successivo</a>
+                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-sm btn-outline-dark">Precedente</a>
+                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-sm btn-outline-dark">Successivo</a>
             </div>
         </div>
 
-        <table class="nbjc-table">
-            <thead>
-                <tr>
-                    <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for week in month_days %}
-                <tr>
-                    {% for day in week %}
-                    <td class="nbjc-day {% if day == 0 %}nbjc-off{% endif %}">
-                        {% if day != 0 %}
-                            <div class="text-end fw-bold small text-muted mb-1">{{ day }}</div>
-                            {% with entries=calendar_data|get_item:day %}
-                                {% for entry in entries %}
-                                    <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
-                                       class="nbjc-entry nbjc-{{ entry.kind|default:'info' }}"
-                                       data-tip="<strong>{{ entry.created_by.username }}</strong><br>{{ entry.comments }}">
-                                        <b>{{ entry.created|date:"H:i" }}</b> {{ entry.comments|truncatechars:20 }}
-                                    </a>
-                                {% endfor %}
-                            {% endwith %}
-                        {% endif %}
-                    </td>
+        <div class="calendar-container border rounded shadow-sm">
+            <table class="table m-0 nb-table-fixed">
+                <thead>
+                    <tr class="text-center bg-light">
+                        <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in month_days %}
+                    <tr>
+                        {% for day in week %}
+                        <td class="nb-day-cell {% if day == 0 %}nb-day-off{% endif %}">
+                            {% if day != 0 %}
+                                <div class="text-end fw-bold small text-muted mb-1">{{ day }}</div>
+                                {% with entries=calendar_data|get_item:day %}
+                                    {% for entry in entries %}
+                                        <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
+                                           class="nb-entry nb-entry-{{ entry.kind|default:'info' }}"
+                                           data-hover="<strong>{{ entry.created_by.username }}</strong><br>{{ entry.comments }}">
+                                            <b>{{ entry.created|date:"H:i" }}</b> {{ entry.comments|truncatechars:15 }}
+                                        </a>
+                                    {% endfor %}
+                                {% endwith %}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
                     {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<div id="nbjc-tooltip"></div>
+<div id="floating-tooltip"></div>
 {% endblock %}
 
 {% block javascript %}
 <script>
     (function() {
-        const tip = document.getElementById('nbjc-tooltip');
+        const tooltip = document.getElementById('floating-tooltip');
         
-        // Usiamo la delega degli eventi per maggiore efficienza
         document.addEventListener('mouseover', function(e) {
-            const target = e.target.closest('.nbjc-entry');
-            if (!target) return;
-
-            const content = target.getAttribute('data-tip');
-            tip.innerHTML = content;
-            tip.style.display = 'block';
+            const el = e.target.closest('.nb-entry');
+            if (el) {
+                tooltip.innerHTML = el.getAttribute('data-hover');
+                tooltip.style.display = 'block';
+            }
         });
 
         document.addEventListener('mousemove', function(e) {
-            if (tip.style.display === 'block') {
-                let x = e.clientX + 20;
-                let y = e.clientY + 20;
+            if (tooltip.style.display === 'block') {
+                let x = e.clientX + 15;
+                let y = e.clientY + 15;
 
-                // Controllo collisione bordi
-                if (x + 280 > window.innerWidth) x = e.clientX - 290;
-                if (y + 150 > window.innerHeight) y = e.clientY - 160;
+                // Evita che esca a destra
+                if (x + 250 > window.innerWidth) x = e.clientX - 260;
+                // Evita che esca in basso
+                if (y + 100 > window.innerHeight) y = e.clientY - 110;
 
-                tip.style.left = x + 'px';
-                tip.style.top = y + 'px';
+                tooltip.style.left = x + 'px';
+                tooltip.style.top = y + 'px';
             }
         });
 
         document.addEventListener('mouseout', function(e) {
-            if (e.target.closest('.nbjc-entry')) {
-                tip.style.display = 'none';
+            if (e.target.closest('.nb-entry')) {
+                tooltip.style.display = 'none';
             }
         });
     })();
