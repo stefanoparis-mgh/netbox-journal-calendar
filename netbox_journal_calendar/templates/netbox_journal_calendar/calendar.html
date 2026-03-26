@@ -1,4 +1,7 @@
 {% extends 'base/layout.html' %}
+{% load calendar_extras %}
+
+{% block title %}Calendario Diario{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -7,6 +10,9 @@
             <h5 class="card-header bg-primary text-white">Filtri Avanzati</h5>
             <div class="card-body">
                 <form method="get" action=".">
+                    <input type="hidden" name="month" value="{{ request.GET.month|default:'' }}">
+                    <input type="hidden" name="year" value="{{ year }}">
+
                     <div class="mb-2">
                         <label class="form-label small fw-bold">Tipo Nota</label>
                         <select name="kind" class="form-select form-select-sm">
@@ -16,6 +22,7 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="mb-2">
                         <label class="form-label small fw-bold">Utente</label>
                         <select name="user" class="form-select form-select-sm">
@@ -25,7 +32,19 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <hr>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Tag</label>
+                        <select name="tag" class="form-select form-select-sm">
+                            <option value="">Tutti</option>
+                            {% for t in tags %}
+                                <option value="{{ t.slug }}" {% if current_tag == t.slug %}selected{% endif %}>{{ t.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <hr class="my-3">
+
                     <div class="mb-2">
                         <label class="form-label small fw-bold">Device</label>
                         <select name="device" class="form-select form-select-sm">
@@ -35,6 +54,7 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="mb-2">
                         <label class="form-label small fw-bold">Virtual Machine</label>
                         <select name="vm" class="form-select form-select-sm">
@@ -44,6 +64,7 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Service</label>
                         <select name="service" class="form-select form-select-sm">
@@ -53,8 +74,9 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="d-grid gap-2 mt-3">
-                        <button type="submit" class="btn btn-primary btn-sm">Applica</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Applica Filtri</button>
                         <a href="?" class="btn btn-outline-secondary btn-sm">Reset</a>
                     </div>
                 </form>
@@ -66,45 +88,49 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0 fw-bold">{{ month_name }} {{ year }}</h2>
             <div class="btn-group shadow-sm">
-                <a href="{{ prev_url }}" class="btn btn-sm btn-outline-dark px-3">&larr;</a>
-                <a href="{{ next_url }}" class="btn btn-sm btn-outline-dark px-3">&rarr;</a>
+                <a href="{{ prev_url }}" class="btn btn-sm btn-outline-dark px-3">&larr; Prec.</a>
+                <a href="{{ next_url }}" class="btn btn-sm btn-outline-dark px-3">Succ. &rarr;</a>
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(7, 1fr); background: #dee2e6; gap: 1px; border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">LUN</div>
-            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">MAR</div>
-            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">MER</div>
-            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">GIO</div>
-            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">VEN</div>
-            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">SAB</div>
-            <div style="background:#f8f9fa; padding:10px; text-align:center; font-weight:700; font-size:0.7rem; color:#495057;">DOM</div>
-
-            {% for day in days %}
-                <div style="background-color: {% if day.num == 0 %}#f1f3f5{% else %}#ffffff{% endif %}; height: 140px; min-height: 140px; padding: 5px; overflow-y: auto;">
-                    {% if day.num > 0 %}
-                        <div style="text-align: right; font-weight: 800; font-size: 0.85rem; color: {% if day.num == today %}#0d6efd{% else %}#adb5bd{% endif %}; margin-bottom: 5px;">
-                            {% if day.num == today %}<span style="font-size: 0.6rem; vertical-align: middle; margin-right: 4px;">●</span>{% endif %}{{ day.num }}
-                        </div>
-                        
-                        <div style="display: block !important;">
-                            {% for entry in day.list %}
-                                <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
-   target="_blank"
-   style="display: block; margin-bottom: 3px; padding: 3px 5px; font-size: 10px; border-radius: 3px; border-left: 3px solid {% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %}; background-color: #f8f9fa; color: #333; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-   onmouseover="showJournalTip(event, '{{ entry.created_by.username|escapejs }}', '{{ entry.created|date:'H:i' }}', '{{ entry.assigned_object|escapejs }}', '{{ entry.comments|escapejs }}')"
-   onmouseout="hideJournalTip()">
-    
-    <i class="mdi {% if entry.assigned_object_type.model == 'device' %}mdi-server{% elif entry.assigned_object_type.model == 'virtualmachine' %}mdi-cube-outline{% elif entry.assigned_object_type.model == 'service' %}mdi-cloud{% else %}mdi-note-text-outline{% endif %}"></i>
-    
-    <span style="font-weight: 700; margin-left: 2px;">{{ entry.created|date:"H:i" }}</span> 
-    {{ entry.comments|truncatechars:12 }}
-</a>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+        <div class="table-responsive shadow-sm rounded">
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); background-color: var(--bs-border-color); gap: 1px; border: 1px solid var(--bs-border-color);">
+                
+                {% for day_name in "LUN,MAR,MER,GIO,VEN,SAB,DOM"|split:"," %}
+                <div class="bg-light-subtle text-center py-2 small fw-bold text-uppercase border-bottom">
+                    {{ day_name }}
                 </div>
-            {% endfor %}
+                {% endfor %}
+
+                {% for day in days %}
+                    <div style="background-color: {% if day.num == 0 %}var(--bs-tertiary-bg){% else %}var(--bs-body-bg){% endif %}; min-height: 155px; padding: 8px; overflow-y: auto;">
+                        {% if day.num > 0 %}
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                                <small class="fw-bold {% if day.num == today %}text-primary{% else %}text-muted{% endif %}">
+                                    {% if day.num == today %}OGGI{% endif %}
+                                </small>
+                                <span class="fw-bold {% if day.num == today %}text-primary fs-5{% endif %}">{{ day.num }}</span>
+                            </div>
+                            
+                            <div class="d-flex flex-column gap-1">
+                                {% for entry in day.list %}
+                                    <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
+                                       target="_blank"
+                                       class="p-1 rounded text-decoration-none shadow-xs border-start border-4"
+                                       style="font-size: 10px; border-left-color: {% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %} !important; background-color: var(--bs-secondary-bg); color: var(--bs-body-color);"
+                                       onmouseover="showJournalTip(event, '{{ entry.created_by.username|escapejs }}', '{{ entry.created|date:'H:i' }}', '{{ entry.assigned_object|escapejs }}', '{{ entry.comments|escapejs }}', '{% for t in entry.tags.all %}{{ t.name }}{% if not forloop.last %}, {% endif %}{% endfor %}')"
+                                       onmouseout="hideJournalTip()">
+                                        
+                                        <i class="mdi {% if entry.assigned_object_type.model == 'device' %}mdi-server{% elif entry.assigned_object_type.model == 'virtualmachine' %}mdi-cube-outline{% elif entry.assigned_object_type.model == 'service' %}mdi-cloud{% else %}mdi-note-text-outline{% endif %}"></i>
+                                        <span class="fw-bold">{{ entry.created|date:"H:i" }}</span> 
+                                        {{ entry.comments|truncatechars:14 }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
@@ -114,22 +140,22 @@
 
 {% block javascript %}
 <script>
-    // Definiamo le funzioni direttamente sull'oggetto window per renderle globali
-    window.showJournalTip = function(e, user, time, obj, comments) {
+    window.showJournalTip = function(e, user, time, obj, comments, tags) {
         const tooltip = document.getElementById('nbjc-tooltip');
         if (!tooltip) return;
+        
+        let tagHtml = tags ? `<div style="font-size: 10px; margin-top: 8px; color: #a2cf6e; border-top: 1px solid #444; padding-top: 5px;"><i class="mdi mdi-tag"></i> ${tags}</div>` : '';
 
         tooltip.innerHTML = `
-            <div style="border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 5px; display: flex; justify-content: space-between;">
+            <div style="border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
                 <b style="color: #0dcaf0;">${user}</b> 
-                <span style="color: #adb5bd; margin-left: 10px;">${time}</span>
+                <span style="color: #adb5bd; font-size: 10px;">${time}</span>
             </div>
             <div style="font-size: 11px; margin-bottom: 8px; color: #ffc107; font-weight: bold;">Ogg: ${obj}</div>
-            <div style="white-space: pre-wrap; word-break: break-word;">${comments}</div>
+            <div style="white-space: pre-wrap; word-break: break-word; color: #f8f9fa;">${comments}</div>
+            ${tagHtml}
         `;
         tooltip.style.display = 'block';
-        
-        // Posizionamento iniziale
         updateTipPos(e);
     };
 
@@ -141,18 +167,13 @@
     function updateTipPos(e) {
         const tooltip = document.getElementById('nbjc-tooltip');
         if (!tooltip || tooltip.style.display !== 'block') return;
-
         let x = e.clientX + 15;
         let y = e.clientY + 15;
-
         if (x + 320 > window.innerWidth) x = e.clientX - 335;
-        if (y + 150 > window.innerHeight) y = e.clientY - 160;
-
+        if (y + 180 > window.innerHeight) y = e.clientY - 190;
         tooltip.style.left = x + 'px';
         tooltip.style.top = y + 'px';
     }
-
-    // Aggiorna la posizione durante il movimento del mouse
     document.addEventListener('mousemove', updateTipPos);
 </script>
 {% endblock %}
