@@ -3,155 +3,146 @@
 
 {% block extra_styles %}
 <style>
-    /* 1. RIPRISTINO GRIGLIA: Forza celle uguali */
-    .calendar-table {
-        table-layout: fixed !important;
-        width: 100% !important;
-        border-collapse: collapse;
-    }
-    .calendar-table th, .calendar-table td {
-        width: 14.28% !important; /* 100% diviso 7 giorni */
-        border: 1px solid #dee2e6 !important;
-        vertical-align: top;
-    }
-    .calendar-day {
-        height: 120px;
-        padding: 5px;
-        position: relative;
-    }
-    .day-off { background-color: #f8f9fa; }
-    
-    /* 2. ENTRIES: Stile compatto per non rompere le celle */
-    .journal-entry {
-        display: block;
-        font-size: 11px;
-        padding: 2px 4px;
-        margin-bottom: 2px;
-        border-radius: 3px;
-        border-left: 3px solid #888;
-        background: #fdfdfd;
-        color: #333 !important;
-        text-decoration: none !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        cursor: help;
-    }
-    .entry-info { border-left-color: #0dcaf0; background-color: #e0f7fa; }
-    .entry-success { border-left-color: #198754; background-color: #e8f5e9; }
-    .entry-warning { border-left-color: #ffc107; background-color: #fffde7; }
-    .entry-danger { border-left-color: #dc3545; background-color: #ffebee; }
+    /* 1. FORZATURA GRIGLIA: Nomi classi univoci per evitare conflitti */
+    .nbjc-container { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
+    .nbjc-sidebar { flex: 0 0 250px; }
+    .nbjc-main { flex: 1; min-width: 600px; }
 
-    /* 3. FIX TOOLTIP: Deve stare sopra a tutto */
-    #js-custom-tooltip {
-        position: fixed;
+    .nbjc-table { 
+        table-layout: fixed !important; 
+        width: 100% !important; 
+        border-collapse: collapse !important; 
+        background: white;
+    }
+    .nbjc-table th { 
+        width: 14.28% !important; 
+        background: #f1f3f5; 
+        padding: 10px; 
+        border: 1px solid #dee2e6; 
+        text-align: center;
+    }
+    .nbjc-day { 
+        height: 130px !important; 
+        width: 14.28% !important; 
+        vertical-align: top !important; 
+        padding: 5px !important; 
+        border: 1px solid #dee2e6 !important;
+    }
+    .nbjc-off { background-color: #f8f9fa !important; }
+
+    /* 2. ENTRIES: Colori e Testo a capo */
+    .nbjc-entry {
+        display: block !important;
+        font-size: 11px !important;
+        line-height: 1.2 !important;
+        padding: 3px 6px !important;
+        margin-bottom: 4px !important;
+        border-radius: 4px !important;
+        border-left: 4px solid #adb5bd !important;
+        text-decoration: none !important;
+        color: #212529 !important;
+        /* Gestione testo: ora va a capo se necessario */
+        white-space: normal !important; 
+        word-break: break-word !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Classi Colore Esplicite */
+    .nbjc-info { border-left-color: #0dcaf0 !important; background-color: #cff4fc !important; }
+    .nbjc-success { border-left-color: #198754 !important; background-color: #d1e7dd !important; }
+    .nbjc-warning { border-left-color: #ffc107 !important; background-color: #fff3cd !important; }
+    .nbjc-danger { border-left-color: #dc3545 !important; background-color: #f8d7da !important; }
+
+    /* 3. TOOLTIP: Posizionamento FISSO assoluto */
+    #nbjc-tooltip {
+        position: fixed !important; /* Fondamentale per non finire a piè di pagina */
         display: none;
-        z-index: 99999;
-        background: #212529;
-        color: #fff;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 12px;
-        max-width: 250px;
-        pointer-events: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        line-height: 1.4;
+        z-index: 999999 !important;
+        background: #212529 !important;
+        color: #ffffff !important;
+        padding: 10px !important;
+        border-radius: 5px !important;
+        font-size: 12px !important;
+        max-width: 280px !important;
+        pointer-events: none !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4) !important;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-3">
+<div class="nbjc-container">
+    <div class="nbjc-sidebar">
         <div class="card">
             <h5 class="card-header">Filtri</h5>
             <div class="card-body">
                 <form method="get">
                     {{ filter_form.as_p }}
                     <button type="submit" class="btn btn-primary w-100 mt-2">Applica</button>
-                    <a href="." class="btn btn-outline-secondary w-100 mt-1">Reset</a>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="col-md-9">
+    <div class="nbjc-main">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">{{ month_name }} {{ year }}</h2>
-            <div>
-                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-secondary btn-sm">Precedente</a>
-                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-secondary btn-sm">Successivo</a>
+            <div class="btn-group">
+                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-dark btn-sm">Precedente</a>
+                <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-dark btn-sm">Successivo</a>
             </div>
         </div>
 
-        <div class="card p-0">
-            <table class="table table-bordered calendar-table m-0">
-                <thead>
-                    <tr class="text-center bg-light">
-                        <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for week in month_days %}
-                    <tr>
-                        {% for day in week %}
-                        <td class="calendar-day {% if day == 0 %}day-off{% endif %}">
-                            {% if day != 0 %}
-                                <div class="text-end fw-bold small text-muted mb-1">{{ day }}</div>
-                                {% with entries=calendar_data|get_item:day %}
-                                    {% for entry in entries %}
-                                        <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
-                                           class="journal-entry entry-{{ entry.kind|default:'info' }}"
-                                           data-hover-text="<strong>{{ entry.created_by.username }}</strong><br>{{ entry.comments|truncatechars:100 }}">
-                                            <b>{{ entry.created|date:"H:i" }}</b> {{ entry.comments|truncatechars:10 }}
-                                        </a>
-                                    {% endfor %}
-                                {% endwith %}
-                            {% endif %}
-                        </td>
-                        {% endfor %}
-                    </tr>
+        <table class="nbjc-table">
+            <thead>
+                <tr>
+                    <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for week in month_days %}
+                <tr>
+                    {% for day in week %}
+                    <td class="nbjc-day {% if day == 0 %}nbjc-off{% endif %}">
+                        {% if day != 0 %}
+                            <div class="text-end fw-bold small text-muted mb-1">{{ day }}</div>
+                            {% with entries=calendar_data|get_item:day %}
+                                {% for entry in entries %}
+                                    <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
+                                       class="nbjc-entry nbjc-{{ entry.kind|default:'info' }}"
+                                       data-tip="<strong>{{ entry.created_by.username }}</strong><br>{{ entry.comments }}">
+                                        <b>{{ entry.created|date:"H:i" }}</b> {{ entry.comments|truncatechars:20 }}
+                                    </a>
+                                {% endfor %}
+                            {% endwith %}
+                        {% endif %}
+                    </td>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-<div id="js-custom-tooltip"></div>
+<div id="nbjc-tooltip"></div>
 {% endblock %}
 
 {% block javascript %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tip = document.getElementById('js-custom-tooltip');
+    (function() {
+        const tip = document.getElementById('nbjc-tooltip');
         
-        document.querySelectorAll('.journal-entry').forEach(el => {
-            el.addEventListener('mouseenter', e => {
-                const text = el.getAttribute('data-hover-text');
-                if (text) {
-                    tip.innerHTML = text;
-                    tip.style.display = 'block';
-                }
-            });
+        // Usiamo la delega degli eventi per maggiore efficienza
+        document.addEventListener('mouseover', function(e) {
+            const target = e.target.closest('.nbjc-entry');
+            if (!target) return;
 
-            el.addEventListener('mousemove', e => {
-                // Calcola posizione rispetto alla finestra (viewport)
-                let x = e.clientX + 15;
-                let y = e.clientY + 15;
-
-                // Impedisci al tooltip di uscire dallo schermo
-                if (x + 250 > window.innerWidth) x = e.clientX - 260;
-                if (y + 100 > window.innerHeight) y = e.clientY - 110;
-
-                tip.style.left = x + 'px';
-                tip.style.top = y + 'px';
-            });
-
-            el.addEventListener('mouseleave', () => {
-                tip.style.display = 'none';
-            });
+            const content = target.getAttribute('data-tip');
+            tip.innerHTML = content;
+            tip.style.display = 'block';
         });
-    });
-</script>
-{% endblock %}
+
+        document.addEventListener('mousemove', function(e) {
+            if (tip.style.display === 'block') {
+                let x = e.clientX +
