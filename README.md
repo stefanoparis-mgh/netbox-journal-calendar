@@ -6,7 +6,7 @@
 
   *A powerful visual calendar extension for NetBox Journal entries.*
 
-  [![GitHub release](v2.0.1](https://github.com/stefanoparis-mgh/netbox-journal-calendar/releases)
+  [![GitHub release](https://img.shields.io//github/v/release/:user/:repo)](https://github.com/stefanoparis-mgh/netbox-journal-calendar/releases)
   [![License](https://img.shields.io/github/license/stefanoparis-mgh/netbox-journal-calendar?style=flat-square&color=blue)](LICENSE)
   [![Python](https://img.shields.io/badge/Python-3.10%2B-flat_square?logo=python&logoColor=white&color=blue)](https://www.python.org/)
   [![NetBox Compatibility](https://img.shields.io/badge/NetBox-4.0%2B-ff69b4?style=flat-square&logo=cisco&logoColor=white)](https://github.com/netbox-community/netbox)
