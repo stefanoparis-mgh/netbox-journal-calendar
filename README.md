@@ -31,7 +31,7 @@ It provides immediate visual context for network changes, maintanance windows, d
 
 ## 🚀 Key Features
 
-* 📅 **Full Calendar Integration:** View Journal entries in a standard Month, Week, or Day layout.
+* 📅 **Full Calendar Integration:** View Journal entries in a standard Month layout.
 * 📊 **Visual Categorization:** Events are automatically color-coded based on the Journal Entry type (*Success, Info, Warning, Danger*).
 * 🔍 **Quick Peek View:** Click an event to instantly see the full note and a link to the associated NetBox object.
 * 🛠️ **Native Experience:** Built to feel like a core part of the NetBox UI.
