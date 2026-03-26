@@ -103,40 +103,44 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript">
+<script>
     (function() {
-        const init = () => {
-            // Cerchiamo l'istanza di bootstrap sia in window che come variabile locale
-            const bs = window.bootstrap;
+        // Tentativi massimi per evitare loop infiniti (es. 5 secondi)
+        let attempts = 0;
+        const maxAttempts = 50; 
 
-            if (typeof bs !== 'undefined' && bs.Popover) {
-                const elements = document.querySelectorAll('[data-bs-toggle="popover"]');
-                console.log(`[Journal Calendar] Trovati ${elements.length} elementi.`);
+        function tryInit() {
+            attempts++;
+            // NetBox 4.x spesso mette le librerie dentro l'oggetto globale 'netbox' o 'bootstrap'
+            const bs = window.bootstrap || (window.netbox ? window.netbox.bootstrap : null);
 
-                elements.forEach(el => {
-                    // Importante: distruggiamo eventuali istanze residue prima di ricrearle
-                    const oldPopover = bs.Popover.getInstance(el);
-                    if (oldPopover) oldPopover.dispose();
-
+            if (bs && bs.Popover) {
+                console.log("Journal Calendar: Bootstrap trovato al tentativo " + attempts);
+                const triggers = document.querySelectorAll('[data-bs-toggle="popover"]');
+                
+                triggers.forEach(el => {
+                    // Inizializzazione manuale forzata
                     new bs.Popover(el, {
                         html: true,
                         sanitize: false,
                         container: 'body',
-                        trigger: 'hover focus', // Aggiunto focus per accessibilità
+                        trigger: 'hover focus',
                         boundary: 'viewport'
                     });
                 });
+            } else if (attempts < maxAttempts) {
+                // Se non lo trova, riprova ogni 100ms
+                setTimeout(tryInit, 100);
             } else {
-                // Se bootstrap non c'è, aspettiamo un po' (NetBox lo carica in modo asincrono)
-                setTimeout(init, 500);
+                console.error("Journal Calendar: Impossibile caricare Bootstrap dopo 5 secondi.");
             }
-        };
+        }
 
-        // Eseguiamo l'inizializzazione al caricamento e dopo ogni eventuale aggiornamento DOM
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
+        // Avvia la catena di controllo al caricamento della pagina
+        if (document.readyState === 'complete') {
+            tryInit();
         } else {
-            init();
+            window.addEventListener('load', tryInit);
         }
     })();
 </script>
