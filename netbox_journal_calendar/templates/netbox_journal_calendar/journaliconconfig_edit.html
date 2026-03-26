@@ -1,0 +1,27 @@
+{% extends 'generic/object_edit.html' %}
+{% load static %}
+
+{% block extra_js %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Funzione per renderizzare l'icona nel menu a tendina
+        function formatIcon (state) {
+            if (!state.id) { return state.text; }
+            // Creiamo un elemento HTML con l'icona e il testo
+            var $state = $(
+                '<span><i class="' + state.id + ' " style="margin-right: 8px; font-size: 1.2rem; vertical-align: middle;"></i>' + state.text + '</span>'
+            );
+            return $state;
+        };
+
+        // Agganciamo la funzione al widget Select2 del campo icon_class
+        $('#id_icon_class').select2({
+            templateResult: formatIcon,
+            templateSelection: formatIcon,
+            theme: 'bootstrap-5', // Coerente con l'UI di NetBox
+            allowClear: true,
+            placeholder: "Seleziona o cerca un'icona..."
+        });
+    });
+</script>
+{% endblock %}

@@ -12,8 +12,13 @@ from extras.choices import JournalEntryKindChoices
 from dcim.models import Device
 from virtualization.models import VirtualMachine
 from ipam.models import Service
+from .models import JournalIconConfig
+from .forms import JournalIconConfigForm
+from netbox.views import generic
+from . import forms, models, tables
 
 User = get_user_model()
+
 
 
 class JournalCalendarView(PermissionRequiredMixin, View):
@@ -28,7 +33,11 @@ class JournalCalendarView(PermissionRequiredMixin, View):
             y = int(request.GET.get('year', now.year))
         except (ValueError, TypeError):
             m, y = now.month, now.year
-
+        icon_configs = {
+            conf.content_type_id: conf.icon_class
+            for conf in JournalIconConfig.objects.all()
+        }
+        DEFAULT_ICON = 'mdi mdi-tag-outline'
         # 2. Recupero parametri Filtri
         kind_f = request.GET.get('kind', '')
         user_f = request.GET.get('user', '')
@@ -84,6 +93,7 @@ class JournalCalendarView(PermissionRequiredMixin, View):
         cal_matrix = py_calendar.monthcalendar(y, m)
         day_entries = {d: [] for d in range(0, 32)}
         for entry in qs:
+            entry.obj_icon = icon_configs.get(entry.assigned_object_type_id, DEFAULT_ICON)
             day_entries[entry.created.day].append(entry)
 
         flat_days = []
@@ -129,3 +139,15 @@ class JournalCalendarView(PermissionRequiredMixin, View):
             'current_tag': tag_f,
         }
         return render(request, 'netbox_journal_calendar/calendar.html', context)
+
+
+class JournalIconConfigEditView(generic.ObjectEditView):
+    queryset = JournalIconConfig.objects.all()
+    form = JournalIconConfigForm
+    template_name = 'netbox_journal_calendar/journaliconconfig_edit.html'
+
+class JournalIconConfigListView(generic.ObjectListView):
+    queryset = models.JournalIconConfig.objects.all()
+    table = tables.JournalIconConfigTable
+    # Se vuoi permettere la creazione rapida da questa pagina
+    action_buttons = ("add",)
