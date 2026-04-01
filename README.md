@@ -1,6 +1,5 @@
 <div align="center">
 
-  
   # NetBox Journal Calendar Plugin
 
   *A powerful visual calendar extension for NetBox Journal entries.*
@@ -14,7 +13,7 @@
 
   [Features](#-key-features) •
   [Installation](#-installation) •
-  [Configuration](#%EF%B8%8F-configuration) •
+  [Configuration](#-configuration) •
   [Screenshots](#-screenshots) •
   [Contributing](#-contributing)
 
@@ -26,7 +25,7 @@
 
 **NetBox Journal Calendar** is a streamlined plugin designed to bring a comprehensive calendar view to the native NetBox journaling system. Instead of scrolling through text-heavy logs, this plugin transforms your existing Journal entries into an interactive, color-coded calendar interface.
 
-It provides immediate visual context for network changes, maintanance windows, device installations, and other critical events registered within your infrastructure database.
+It provides immediate visual context for network changes, maintenance windows, device installations, and other critical events registered within your infrastructure database.
 
 ## 🚀 Key Features
 
@@ -38,16 +37,64 @@ It provides immediate visual context for network changes, maintanance windows, d
 
 ## 🛠️ Installation
 
-This plugin can be installed using git.
-
 ### Step 1: Install the Package
 
-Activate your NetBox virtual environment and install the plugin.
+Activate your NetBox virtual environment and install the plugin using pip:
 
 ```bash
+# Navigate to NetBox directory
 cd /opt/netbox
-source /opt/netbox/venv/bin/activate
-pip install git+https://github.com/stefanoparis-mgh/netbox-journal-calendar
+# Activate the virtual environment
+source venv/bin/activate
+# Install the plugin from GitHub
+pip install git+[https://github.com/stefanoparis-mgh/netbox-journal-calendar](https://github.com/stefanoparis-mgh/netbox-journal-calendar)
+```
+
+### Step 2: Enable the Plugin
+
+Edit your `configuration.py` (usually located at `/opt/netbox/netbox/netbox/configuration.py`) and add the plugin to the `PLUGINS` list:
+
+```python
+# configuration.py
+
+PLUGINS = [
+    'netbox_journal_calendar',
+]
+```
+
+### Step 3: Run Migrations and Collect Static Files
+
+The plugin requires database alignment and static JS/CSS files for the calendar rendering:
+
+```bash
 python3 netbox/manage.py migrate
 python3 netbox/manage.py collectstatic --no-input
-systemctl restart netbox netbox-rq
+```
+
+### Step 4: Restart NetBox Services
+
+Restart the services to apply the changes:
+
+```bash
+sudo systemctl restart netbox netbox-rq
+```
+
+## ⚙️ Configuration
+
+No specific configuration is required to get started. However, ensure that your users have the appropriate permissions to view **Journal Entries** within NetBox to see them on the calendar.
+
+## 📸 Screenshots
+
+### Calendar Dashboard
+![Main View](https://raw.githubusercontent.com/stefanoparis-mgh/netbox-journal-calendar/main/docs/img/calendar_main.png)
+
+### Event Details
+![Detail View](https://raw.githubusercontent.com/stefanoparis-mgh/netbox-journal-calendar/main/docs/img/entry_detail.png)
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+**Developed with ❤️ by [stefanoparis-mgh](https://github.com/stefanoparis-mgh)**
