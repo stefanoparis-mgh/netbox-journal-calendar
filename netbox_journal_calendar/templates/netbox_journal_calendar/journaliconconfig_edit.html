@@ -1,0 +1,24 @@
+{% extends 'generic/object_edit.html' %}
+{% load static %}
+
+{% block extra_js %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        function formatIcon (state) {
+            if (!state.id) { return state.text; }
+            var $state = $(
+                '<span><i class="' + state.id + ' " style="margin-right: 8px; font-size: 1.2rem; vertical-align: middle;"></i>' + state.text + '</span>'
+            );
+            return $state;
+        };
+
+        $('#id_icon_class').select2({
+            templateResult: formatIcon,
+            templateSelection: formatIcon,
+            theme: 'bootstrap-5', 
+            allowClear: true,
+            placeholder: "Seleziona o cerca un'icona..."
+        });
+    });
+</script>
+{% endblock %}

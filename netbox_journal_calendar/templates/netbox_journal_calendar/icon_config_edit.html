@@ -1,0 +1,14 @@
+$(document).ready(function() {
+    $('#id_icon_class').select2({
+        templateResult: formatIcon,
+        templateSelection: formatIcon
+    });
+
+    function formatIcon (state) {
+        if (!state.id) { return state.text; }
+        var $state = $(
+            '<span><i class="' + state.id + '"></i> ' + state.text + '</span>'
+        );
+        return $state;
+    };
+});

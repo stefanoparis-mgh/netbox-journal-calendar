@@ -1,0 +1,259 @@
+{% extends 'base/layout.html' %}
+{% load calendar_extras %}
+{% load i18n %}
+
+{% block title %}Journal Calendar{% endblock %}
+
+{% block content %}
+<style>
+    .calendar-grid {
+        display: grid; 
+        grid-template-columns: repeat(7, 1fr); 
+        gap: 15px;
+    }
+
+    .cal-card {
+        min-height: 160px;
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background-color: var(--bs-body-bg);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .cal-day-real { cursor: pointer; }
+
+    .cal-day-real:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        filter: brightness(1.1);
+        z-index: 5;
+        border-color: var(--bs-primary) !important;
+    }
+
+    .cal-day-work { 
+        background-color: var(--bs-body-bg);
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    }
+
+    .cal-day-sat { 
+        border-top: 4px solid #fd7e14 !important; 
+        background-color: rgba(253, 126, 20, 0.05);
+    }
+
+    .cal-day-sun { 
+        border-top: 4px solid #dc3545 !important; 
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    .cal-day-today { 
+        border: 1px solid var(--bs-primary) !important; 
+        border-top: 5px solid var(--bs-primary) !important;
+        background-color: rgba(13, 110, 253, 0.08);
+        box-shadow: 0 0 15px rgba(13, 110, 253, 0.2);
+    }
+
+    .cal-day-empty { 
+        background-color: var(--bs-tertiary-bg); 
+        opacity: 0.3;
+        border: 1px solid transparent;
+        pointer-events: none;
+    }
+
+    .filter-header {
+        background-color: var(--bs-tertiary-bg) !important;
+        color: var(--bs-primary) !important;
+        border-bottom: 1px solid var(--bs-border-color) !important;
+        font-weight: bold;
+    }
+</style>
+
+<div class="row">
+    <div class="col col-md-3">
+        <div class="card shadow-sm border-0 overflow-hidden">
+            <h5 class="card-header filter-header">Advanced Filter</h5>
+            <div class="card-body">
+                <form method="get" action=".">
+                    <input type="hidden" name="month" value="{{ request.GET.month|default:'' }}">
+                    <input type="hidden" name="year" value="{{ year }}">
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-muted">Kind</label>
+                        <select name="kind" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            {% for choice in kind_choices %}
+                                <option value="{{ choice.0 }}" {% if current_kind == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-muted">User</label>
+                        <select name="user" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            {% for u in users %}
+                                <option value="{{ u.id }}" {% if current_user == u.id|slugify %}selected{% endif %}>{{ u.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-muted">Tag</label>
+                        <select name="tag" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            {% for t in tags %}
+                                <option value="{{ t.slug }}" {% if current_tag == t.slug %}selected{% endif %}>{{ t.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <hr class="my-3 opacity-25">
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-muted">Device</label>
+                        <select name="device" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            {% for d in devices %}
+                                <option value="{{ d.id }}" {% if current_device == d.id|slugify %}selected{% endif %}>{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-muted">Virtual Machine</label>
+                        <select name="vm" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            {% for v in vms %}
+                                <option value="{{ v.id }}" {% if current_vm == v.id|slugify %}selected{% endif %}>{{ v.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Service</label>
+                        <select name="service" class="form-select form-select-sm">
+                            <option value="">Tutti</option>
+                            {% for s in services %}
+                                <option value="{{ s.id }}" {% if current_service == s.id|slugify %}selected{% endif %}>{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold">Apply</button>
+                        <a href="?" class="btn btn-outline-secondary btn-sm">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0 fw-bold text-body">{{ month_name }} {{ year }}</h2>
+            <div class="btn-group shadow-sm">
+                <a href="{{ prev_url }}" class="btn btn-sm btn-outline-secondary px-3">&larr; Prev.</a>
+                <a href="{{ next_url }}" class="btn btn-sm btn-outline-secondary px-3">Next. &rarr;</a>
+            </div>
+        </div>
+
+        <div class="calendar-grid">
+   
+    {% for i in "0123456"|make_list %}
+        <div class="text-center py-2 small fw-bold text-uppercase text-muted" style="letter-spacing: 2px;">
+            
+            {{ i|get_day_name }}
+        </div>
+    {% endfor %}
+
+            {% for day in days %}
+                {% cycle 'work' 'work' 'work' 'work' 'work' 'sat' 'sun' as day_type silent %}
+                
+                <div class="cal-card 
+                    {% if day.num == 0 %}cal-day-empty{% else %}cal-day-real{% endif %}
+                    {% if day.num > 0 and day_type == 'work' %}cal-day-work{% endif %}
+                    {% if day.num == today %}cal-day-today{% elif day_type == 'sat' and day.num > 0 %}cal-day-sat{% elif day_type == 'sun' and day.num > 0 %}cal-day-sun{% endif %}">
+                    
+                    {% if day.num > 0 %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary-subtle">
+                            <small class="fw-bold {% if day.num == today %}text-primary{% elif day_type == 'sat' %}text-warning{% elif day_type == 'sun' %}text-danger{% else %}text-muted{% endif %}">
+                                {% if day.num == today %}
+									{% trans "Today" as label_today %}{{ label_today|upper }}
+								{% else %}
+									{{ forloop.counter0|get_day_abbr_from_index }}
+								{% endif %}
+                            </small>
+                            <span class="fw-bold {% if day.num == today %}text-primary fs-4{% else %}text-body{% endif %}">{{ day.num }}</span>
+                        </div>
+                        
+                        <div class="d-flex flex-column gap-1">
+                            {% for entry in day.list %}
+                                <a href="{% url 'extras:journalentry' pk=entry.pk %}" 
+                                   target="_blank"
+                                   class="p-1 rounded text-decoration-none border-start border-4 shadow-none"
+                                   style="font-size: 10px; border-left-color: {% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %} !important; background-color: var(--bs-tertiary-bg); color: var(--bs-body-color);"
+                                   onmouseover="showJournalTip(event, '{% if entry.created_by.get_full_name %}{{ entry.created_by.get_full_name|escapejs }}{% else %}{{ entry.created_by.username|escapejs }}{% endif %}', '{{ entry.created|date:'Y-m-d H:i' }}', '{{ entry.assigned_object|escapejs }}', '{{ entry.comments|escapejs }}', '{% for t in entry.tags.all %}{{ t.name }}{% if not forloop.last %}, {% endif %}{% endfor %}', '{{ entry.obj_icon|escapejs }}', '{% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %}')"
+                                   onmouseout="hideJournalTip()">
+                                    <i class="mdi {{ entry.obj_icon }}" style="color: {% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %};"></i>
+                                    <span class="fw-bold" style="opacity: 0.8;">{{ entry.created|date:"H:i" }}</span> 
+                                    <span class="small">{{ entry.comments|truncatechars:12 }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="nbjc-tooltip" style="position: fixed; display: none; background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); color: var(--bs-body-color); padding: 15px; border-radius: 12px; font-size: 12px; z-index: 99999; min-width: 350px; pointer-events: none; box-shadow: 0 15px 40px rgba(0,0,0,0.3); backdrop-filter: blur(10px); line-height: 1.4;"></div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    window.showJournalTip = function(e, fullName, time, obj, comments, tags, icon, kindColor) {
+        const tooltip = document.getElementById('nbjc-tooltip');
+        if (!tooltip) return;
+        let iconClass = icon.startsWith('mdi') ? icon : 'mdi-' + icon;
+        let tagHtml = tags ? `<div style="font-size: 10px; margin-top: 8px; color: #198754; border-top: 1px solid var(--bs-border-color); padding-top: 5px;"><i class="mdi mdi-tag"></i> ${tags}</div>` : '';
+        
+        tooltip.innerHTML = `
+            <div style="display: flex; align-items: flex-start; gap: 15px;">
+                <div style="background: var(--bs-tertiary-bg); padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: center; min-width: 65px; min-height: 65px; border: 1px solid var(--bs-border-color);">
+                    <i class="mdi ${iconClass}" style="font-size: 45px; color: ${kindColor}; filter: drop-shadow(0 0 5px ${kindColor}aa);"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="border-bottom: 1px solid var(--bs-border-color); padding-bottom: 5px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <b style="color: var(--bs-primary); font-size: 13px;">${fullName}</b> 
+                        <span class="text-muted" style="font-size: 10px;">${time}</span>
+                    </div>
+                    <div style="font-size: 11px; margin-bottom: 8px; font-weight: bold;">Ogg: ${obj}</div>
+                    <div style="white-space: pre-wrap; word-break: break-word;">${comments}</div>
+                    ${tagHtml}
+                </div>
+            </div>`;
+        tooltip.style.display = 'block';
+        updateTipPos(e);
+    };
+
+    window.hideJournalTip = function() {
+        const tooltip = document.getElementById('nbjc-tooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    };
+
+    function updateTipPos(e) {
+        const tooltip = document.getElementById('nbjc-tooltip');
+        if (!tooltip || tooltip.style.display !== 'block') return;
+        let x = e.clientX + 20; let y = e.clientY + 20;
+        if (x + 360 > window.innerWidth) x = e.clientX - 370;
+        if (y + 200 > window.innerHeight) y = e.clientY - 210;
+        tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+    }
+    document.addEventListener('mousemove', updateTipPos);
+</script>
+{% endblock %}
