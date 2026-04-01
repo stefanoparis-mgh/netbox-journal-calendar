@@ -47,7 +47,7 @@ cd /opt/netbox
 # Activate the virtual environment
 source venv/bin/activate
 # Install the plugin from GitHub
-pip install git+[https://github.com/stefanoparis-mgh/netbox-journal-calendar](https://github.com/stefanoparis-mgh/netbox-journal-calendar)
+pip install git+https://github.com/stefanoparis-mgh/netbox-journal-calendar
 ```
 
 ### Step 2: Enable the Plugin
