@@ -45,6 +45,9 @@ This plugin can be installed using git.
 Activate your NetBox virtual environment and install the plugin.
 
 ```bash
+cd /opt/netbox
 source /opt/netbox/venv/bin/activate
 pip install git+https://github.com/stefanoparis-mgh/netbox-journal-calendar
+python3 netbox/manage.py migrate
+python3 netbox/manage.py collectstatic --no-input
 systemctl restart netbox netbox-rq
