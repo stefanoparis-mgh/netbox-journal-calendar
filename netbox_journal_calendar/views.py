@@ -156,6 +156,9 @@ class JournalIconConfigDeleteView(generic.ObjectDeleteView):
 class JournalIconConfigChangeLogView(generic.ObjectChangeLogView):
     queryset = models.JournalIconConfig.objects.all()
 
+    def get(self, request, *args, **kwargs):
+        return super().get(request, model=self.queryset.model, *args, **kwargs)
+
 class JournalIconConfigView(generic.ObjectView):
     queryset = models.JournalIconConfig.objects.all()
 
