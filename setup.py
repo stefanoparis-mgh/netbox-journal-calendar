@@ -15,7 +15,7 @@ class BuildMessages(build):
 
 setup(
     name='netbox-journal-calendar',
-    version='2.5.9',
+    version='2.6.0',
     description='Interactive Calendar for Journal Entries',
     long_description='Display journal entry as a calendar view',
     url='https://github.com/stefanoparis-mgh/netbox-journal-calendar',

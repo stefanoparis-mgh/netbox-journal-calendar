@@ -84,7 +84,7 @@
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-muted">Kind</label>
                         <select name="kind" class="form-select form-select-sm">
-                            <option value="">All</option>
+                            <option value="">Tutti</option>
                             {% for choice in kind_choices %}
                                 <option value="{{ choice.0 }}" {% if current_kind == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
                             {% endfor %}
@@ -94,7 +94,7 @@
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-muted">User</label>
                         <select name="user" class="form-select form-select-sm">
-                            <option value="">All</option>
+                            <option value="">Tutti</option>
                             {% for u in users %}
                                 <option value="{{ u.id }}" {% if current_user == u.id|slugify %}selected{% endif %}>{{ u.username }}</option>
                             {% endfor %}
@@ -104,7 +104,7 @@
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-muted">Tag</label>
                         <select name="tag" class="form-select form-select-sm">
-                            <option value="">All</option>
+                            <option value="">Tutti</option>
                             {% for t in tags %}
                                 <option value="{{ t.slug }}" {% if current_tag == t.slug %}selected{% endif %}>{{ t.name }}</option>
                             {% endfor %}
@@ -116,7 +116,7 @@
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-muted">Device</label>
                         <select name="device" class="form-select form-select-sm">
-                            <option value="">All</option>
+                            <option value="">Tutti</option>
                             {% for d in devices %}
                                 <option value="{{ d.id }}" {% if current_device == d.id|slugify %}selected{% endif %}>{{ d.name }}</option>
                             {% endfor %}
@@ -126,7 +126,7 @@
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-muted">Virtual Machine</label>
                         <select name="vm" class="form-select form-select-sm">
-                            <option value="">All</option>
+                            <option value="">Tutti</option>
                             {% for v in vms %}
                                 <option value="{{ v.id }}" {% if current_vm == v.id|slugify %}selected{% endif %}>{{ v.name }}</option>
                             {% endfor %}

@@ -6,7 +6,7 @@ class JournalCalendarConfig(PluginConfig):
     name = 'netbox_journal_calendar'
     verbose_name = _('Journal Calendar')  # <--- Usa _() per la traduzione
     description = _('A visual calendar for Journal entries')
-    version = ('2.5.9')
+    version = ('2.6.0')
     author = 'Stefano Paris'
     base_url = 'journal-calendar'
     menu = 'navigation.menu'
