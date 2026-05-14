@@ -17,6 +17,10 @@ from netbox.views import generic
 from . import forms, models, tables
 from .api import serializers
 from netbox.api.viewsets import NetBoxModelViewSet
+try:
+    from netbox_map.models import ApplicationDeployment
+except ImportError:
+    ApplicationDeployment = None
 
 User = get_user_model()
 
@@ -45,6 +49,7 @@ class JournalCalendarView(PermissionRequiredMixin, View):
         vm_f = request.GET.get('vm', '')
         service_f = request.GET.get('service', '')
         tag_f = request.GET.get('tag', '')
+        application_f = request.GET.get('application')
 
         qs = JournalEntry.objects.filter(
             created__year=y, created__month=m
@@ -56,6 +61,12 @@ class JournalCalendarView(PermissionRequiredMixin, View):
             qs = qs.filter(created_by_id=user_f)
         if tag_f:
             qs = qs.filter(tags__slug=tag_f)
+        if application_f:
+            app_ct = ContentType.objects.get(app_label='netbox_map', model='applicationdeployment')
+            journal_entries = journal_entries.filter(
+                assigned_object_type=app_ct,
+                assigned_object_id=application_f
+            )
 
         device_ct = ContentType.objects.get_for_model(Device)
         vm_ct = ContentType.objects.get_for_model(VirtualMachine)
@@ -81,6 +92,8 @@ class JournalCalendarView(PermissionRequiredMixin, View):
         srv_ids = JournalEntry.objects.filter(assigned_object_type=service_ct).values_list('assigned_object_id',
                                                                                            flat=True).distinct()
         services = Service.objects.filter(id__in=srv_ids).order_by('name')
+
+        applications = ApplicationDeployment.objects.all()
 
         tag_ids = JournalEntry.objects.values_list('tags', flat=True).distinct()
         tags = Tag.objects.filter(id__in=tag_ids).order_by('name')
@@ -134,6 +147,8 @@ class JournalCalendarView(PermissionRequiredMixin, View):
             'current_vm': vm_f,
             'current_service': service_f,
             'current_tag': tag_f,
+            'applications': applications,
+            'current_application': application_f,
         }
         return render(request, 'netbox_journal_calendar/calendar.html', context)
 

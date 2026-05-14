@@ -142,6 +142,15 @@
                             {% endfor %}
                         </select>
                     </div>
+					<div class="mb-3">
+    <label class="form-label small fw-bold text-muted">Application Deployment</label>
+    <select name="application" class="form-select form-select-sm">
+        <option value="">All</option>
+        {% for app in applications %}
+            <option value="{{ app.id }}" {% if current_application == app.id|slugify %}selected{% endif %}>{{ app.name }}</option>
+        {% endfor %}
+    </select>
+</div>
 
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary btn-sm fw-bold">Apply</button>
