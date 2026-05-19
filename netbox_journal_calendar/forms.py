@@ -34,7 +34,7 @@ class JournalCalendarFilterForm(forms.Form):
 class JournalIconConfigForm(NetBoxModelForm):
     content_type = forms.ModelChoiceField(
         queryset=ContentType.objects.filter(
-            app_label__in=['dcim', 'virtualization', 'ipam', 'tenancy', 'circuits', 'wireless', 'extras','netbox_custom_objects']
+            app_label__in=['dcim', 'virtualization', 'ipam', 'tenancy', 'circuits', 'wireless', 'extras','netbox_custom_objects','netbox_map']
         ).order_by('app_label', 'model'),
         label='Object Type',
         widget=forms.Select(attrs={'class': 'netbox-static-select'}),
