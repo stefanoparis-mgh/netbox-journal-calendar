@@ -7,7 +7,9 @@ class JournalIconConfigTable(NetBoxTable):
         linkify=True,
         verbose_name='Object Type'
     )
-    icon_class = tables.Column(
+    # Cambiato in TemplateColumn per supportare il codice HTML/Template
+    icon_class = tables.TemplateColumn(
+        template_code='<i class="mdi {{ record.icon_class }}"></i> {{ record.icon_class }}',
         verbose_name='Icon Class'
     )
     id = tables.Column(linkify=True)
