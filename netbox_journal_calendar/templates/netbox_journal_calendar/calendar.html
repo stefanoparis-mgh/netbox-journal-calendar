@@ -70,11 +70,19 @@
         border-bottom: 1px solid var(--bs-border-color) !important;
         font-weight: bold;
     }
+
+    /* Forza lo scorrimento e l'altezza massima nativa quando la tendina viene aperta (sfrutta l'attributo size) */
+    .scrollable-select:focus {
+        position: absolute;
+        z-index: 999;
+        max-height: 200px !important;
+        overflow-y: auto !important;
+    }
 </style>
 
 <div class="row">
     <div class="col col-md-3">
-        <div class="card shadow-sm border-0 overflow-hidden">
+        <div class="card shadow-sm border-0">
             <h5 class="card-header filter-header">Advanced Filter</h5>
             <div class="card-body">
                 <form method="get" action=".">
@@ -133,7 +141,7 @@
                         </select>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label small fw-bold text-muted">Service</label>
                         <select name="service" class="form-select form-select-sm">
                             <option value="">All</option>
@@ -142,15 +150,16 @@
                             {% endfor %}
                         </select>
                     </div>
-					<div class="mb-3">
-    <label class="form-label small fw-bold text-muted">Application Deployment</label>
-    <select name="application" class="form-select form-select-sm">
-        <option value="">All</option>
-        {% for app in applications %}
-            <option value="{{ app.id }}" {% if current_application == app.id|slugify %}selected{% endif %}>{{ app.name }}</option>
-        {% endfor %}
-    </select>
-</div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-muted">Application</label>
+                        <select name="application" class="form-select form-select-sm scrollable-select" onmousedown="if(this.options.length>5){this.size=5;}" onchange="this.size=1;" onblur="this.size=1;">
+                            <option value="">All</option>
+                            {% for app in applications %}
+                                <option value="{{ app.id }}" {% if current_application == app.id|slugify %}selected{% endif %}>{{ app.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary btn-sm fw-bold">Apply</button>
@@ -174,7 +183,6 @@
    
     {% for i in "0123456"|make_list %}
         <div class="text-center py-2 small fw-bold text-uppercase text-muted" style="letter-spacing: 2px;">
-            
             {{ i|get_day_name }}
         </div>
     {% endfor %}
@@ -191,10 +199,10 @@
                         <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary-subtle">
                             <small class="fw-bold {% if day.num == today %}text-primary{% elif day_type == 'sat' %}text-warning{% elif day_type == 'sun' %}text-danger{% else %}text-muted{% endif %}">
                                 {% if day.num == today %}
-									{% trans "Today" as label_today %}{{ label_today|upper }}
-								{% else %}
-									{{ forloop.counter0|get_day_abbr_from_index }}
-								{% endif %}
+                                    {% trans "Today" as label_today %}{{ label_today|upper }}
+                                {% else %}
+                                    {{ forloop.counter0|get_day_abbr_from_index }}
+                                {% endif %}
                             </small>
                             <span class="fw-bold {% if day.num == today %}text-primary fs-4{% else %}text-body{% endif %}">{{ day.num }}</span>
                         </div>
@@ -207,9 +215,9 @@
                                    style="font-size: 10px; border-left-color: {% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %} !important; background-color: var(--bs-tertiary-bg); color: var(--bs-body-color);"
                                    onmouseover="showJournalTip(event, '{% if entry.created_by.get_full_name %}{{ entry.created_by.get_full_name|escapejs }}{% else %}{{ entry.created_by.username|escapejs }}{% endif %}', '{{ entry.created|date:'Y-m-d H:i' }}', '{{ entry.assigned_object|escapejs }}', '{{ entry.comments|escapejs }}', '{% for t in entry.tags.all %}{{ t.name }}{% if not forloop.last %}, {% endif %}{% endfor %}', '{{ entry.obj_icon|escapejs }}', '{% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %}')"
                                    onmouseout="hideJournalTip()">
-                                    <i class="mdi {{ entry.obj_icon }}" style="color: {% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %};"></i>
-                                    <span class="fw-bold" style="opacity: 0.8;">{{ entry.created|date:"H:i" }}</span> 
-                                    <span class="small">{{ entry.comments|truncatechars:12 }}</span>
+                                     <i class="mdi {{ entry.obj_icon }}" style="color: {% if entry.kind == 'danger' %}#dc3545{% elif entry.kind == 'warning' %}#ffc107{% elif entry.kind == 'success' %}#198754{% else %}#0dcaf0{% endif %};"></i>
+                                     <span class="fw-bold" style="opacity: 0.8;">{{ entry.created|date:"H:i" }}</span> 
+                                     <span class="small">{{ entry.comments|truncatechars:12 }}</span>
                                 </a>
                             {% endfor %}
                         </div>

@@ -18,9 +18,9 @@ from . import forms, models, tables
 from .api import serializers
 from netbox.api.viewsets import NetBoxModelViewSet
 try:
-    from netbox_map.models import ApplicationDeployment
+    from netbox_map.models import Application
 except ImportError:
-    ApplicationDeployment = None
+    Application = None
 
 User = get_user_model()
 
@@ -62,8 +62,9 @@ class JournalCalendarView(PermissionRequiredMixin, View):
         if tag_f:
             qs = qs.filter(tags__slug=tag_f)
         if application_f:
-            app_ct = ContentType.objects.get(app_label='netbox_map', model='applicationdeployment')
-            journal_entries = journal_entries.filter(
+            app_ct = ContentType.objects.get(app_label='netbox_map', model='application')
+            # CORRETTO: Sostituito 'journal_entries' con 'qs'
+            qs = qs.filter(
                 assigned_object_type=app_ct,
                 assigned_object_id=application_f
             )
@@ -93,7 +94,8 @@ class JournalCalendarView(PermissionRequiredMixin, View):
                                                                                            flat=True).distinct()
         services = Service.objects.filter(id__in=srv_ids).order_by('name')
 
-        applications = ApplicationDeployment.objects.all()
+        # CORRETTO: Controllo di sicurezza se il plugin netbox_map non è installato
+        applications = Application.objects.all() if Application else []
 
         tag_ids = JournalEntry.objects.values_list('tags', flat=True).distinct()
         tags = Tag.objects.filter(id__in=tag_ids).order_by('name')
